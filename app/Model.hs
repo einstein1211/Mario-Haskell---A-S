@@ -42,7 +42,6 @@ data Physics = Physics
 data Player = Player
     {   plyType :: PlyrType
     ,   plyPhysics :: Physics
-    ,   plyAcceleration :: Acceleration
     ,   plyDirection :: Direction
     ,   plyAlive :: IsAlive
     ,   plyGrounded :: IsGrounded
@@ -98,7 +97,6 @@ data GameState = GameState
     ,   items :: [Item]
     ,   blocks :: [Block]
     ,   platforms :: [Platform]
-
     } deriving (Show,Eq)
 
 -- initialState :: GameState
