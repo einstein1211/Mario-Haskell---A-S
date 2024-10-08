@@ -99,5 +99,15 @@ data GameState = GameState
     ,   platforms :: [Platform]
     } deriving (Show,Eq)
 
--- initialState :: GameState
--- initialState = GameState ShowNothing 0
+initialState :: GameState
+initialState = GameState
+    {   lives = 10
+    ,   score = 0
+    ,   time = 0.0
+    ,   status = PLAYING
+    ,   players = [Mario]
+    ,   enemies = [GOOMBA,GOOMBA]
+    ,   items = []
+    ,   blocks = []
+    ,   platforms = []
+    }
