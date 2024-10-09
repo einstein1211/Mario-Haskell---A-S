@@ -1,8 +1,13 @@
 module Model where
 
-data Point = Pnt Float Float deriving(Show,Eq) --Could perhaps be Int,Int but would maybe cause issues with position calc
-data Velocity = Vel Float Float deriving(Show,Eq)
-data Acceleration = Acc Float Float deriving(Show,Eq)
+import Graphics.Gloss
+
+type Xvel = Float 
+type Yvel = Float
+type Velocity = (Xvel,Yvel)
+type Xacc = Float
+type Yacc = Float
+type Acceleration = (Xacc,Yacc)
 data GridIndex = Grd Int Int deriving (Show,Eq)
 data Hitbox = HB Point Point deriving (Show,Eq)
 
@@ -33,9 +38,9 @@ data HasWon     = WON   | LOST      | PLAYING
     deriving(Show,Eq)
 
 data Physics = Physics
-    {   position :: Point
-    ,   velocity :: Velocity
-    ,   acceleration :: Acceleration
+    {   pos :: Point
+    ,   vel :: Velocity
+    ,   acc :: Acceleration
     } deriving(Show,Eq)
 
 -- | Data describing players in Game 
@@ -105,9 +110,47 @@ initialState = GameState
     ,   score = 0
     ,   time = 0.0
     ,   status = PLAYING
-    ,   players = [Mario]
-    ,   enemies = [GOOMBA,GOOMBA]
+    ,   players = [mario]
+    ,   enemies = [goomba,goomba]
     ,   items = []
     ,   blocks = []
     ,   platforms = []
+    }
+
+mario :: Player
+mario = Player
+    {   plyType = Mario
+    ,   plyPhysics = initPhysics
+    ,   plyDirection = RIGHT
+    ,   plyAlive = ALIVE
+    ,   plyGrounded = GROUNDED
+    ,   plyMovement = NORMAL
+    ,   plyPower = SMALL
+    }
+
+marioPath :: Path
+marioPath = [(0.0,0.0),(40.0,0.0),(40.0,40.0),(0.0,40.0)]
+
+goomba :: Enemy
+goomba = Enemy
+    {   eType = GOOMBA
+    ,   ePhysics = initPhysics2
+    ,   eDirection = RIGHT
+    ,   eAlive = ALIVE
+    ,   eGrounded = GROUNDED
+    ,   eAI = EASY
+    }
+
+initPhysics :: Physics
+initPhysics = Physics
+    {   pos = (0.0,0.0)
+    ,   vel = (100.0,100.0)
+    ,   acc = (0.0,0.0)
+    }
+
+initPhysics2 :: Physics
+initPhysics2 = Physics
+    {   pos = (0.0,0.0)
+    ,   vel = (-100.0,100.0)
+    ,   acc = (0.0,0.0)
     }
