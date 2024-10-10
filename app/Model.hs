@@ -12,7 +12,7 @@ data GridIndex = Grd Int Int deriving (Show,Eq)
 data Hitbox = HB Point Point deriving (Show,Eq)
 
 fps :: Int
-fps = 60
+fps = 100
 
 data PlyrType   = Mario | Luigi
     deriving (Show,Eq)
@@ -144,13 +144,13 @@ goomba = Enemy
 initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (100.0,100.0)
-    ,   acc = (0.0,0.0)
+    ,   vel = (0.0,0.0)
+    ,   acc = (100.0,10.0)
     }
 
 initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (-100.0,100.0)
-    ,   acc = (0.0,0.0)
+    ,   vel = (0.0,0.0)
+    ,   acc = (-100.0,10.0)
     }
