@@ -6,7 +6,7 @@ import View
 import Graphics.Gloss.Interface.IO.Game
 
 main :: IO ()
-main = playIO (InWindow "Counter" (1280, 720) (0, 0))
+main = playIO (InWindow "Mario" res (0, 0))
               blue            -- Background color
               fps               -- Frames per second
               initialState     -- Initial state

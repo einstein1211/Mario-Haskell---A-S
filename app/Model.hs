@@ -14,6 +14,15 @@ data Hitbox = HB Point Point deriving (Show,Eq)
 fps :: Int
 fps = 100
 
+res :: (Int,Int)
+res = (1280,720)
+
+uppbound :: (Float,Float)
+uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
+
+lowbound :: (Float,Float)
+lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
+
 data PlyrType   = Mario | Luigi
     deriving (Show,Eq)
 data EnmyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA
@@ -144,13 +153,13 @@ goomba = Enemy
 initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (0.0,0.0)
-    ,   acc = (100.0,10.0)
+    ,   vel = (-200.0,100.0)
+    ,   acc = (0.0,0.0)
     }
 
 initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (0.0,0.0)
-    ,   acc = (-100.0,10.0)
+    ,   vel = (300.0,0.0)
+    ,   acc = (0.0,0.0)
     }
