@@ -9,7 +9,9 @@ type Xacc = Float
 type Yacc = Float
 type Acceleration = (Xacc,Yacc)
 data GridIndex = Grd Int Int deriving (Show,Eq)
-data Hitbox = HB Point Point deriving (Show,Eq)
+type Width = Int
+type Height = Int
+data Hitbox = HB Width Height deriving (Show,Eq)
 
 fps :: Int
 fps = 100
@@ -21,7 +23,8 @@ uppbound :: (Float,Float)
 uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
 
 lowbound :: (Float,Float)
-lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
+lowbound = (-fst uppbound,-snd uppbound)
+-- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
 
 data PlyrType   = Mario | Luigi
     deriving (Show,Eq)
@@ -50,15 +53,16 @@ data Physics = Physics
     {   pos :: Point
     ,   vel :: Velocity
     ,   acc :: Acceleration
+    ,   gnd :: IsGrounded
     } deriving(Show,Eq)
 
 -- | Data describing players in Game 
 data Player = Player
     {   plyType :: PlyrType
+    ,   plyHitbox :: Hitbox
     ,   plyPhysics :: Physics
     ,   plyDirection :: Direction
     ,   plyAlive :: IsAlive
-    ,   plyGrounded :: IsGrounded
     ,   plyMovement :: Movement
     ,   plyPower :: Status
     } deriving (Show,Eq)
@@ -66,10 +70,10 @@ data Player = Player
 -- | Data describing enemies in Game 
 data Enemy = Enemy
     {   eType :: EnmyType
+    ,   eHitbox :: Hitbox
     ,   ePhysics :: Physics
     ,   eDirection :: Direction
     ,   eAlive :: IsAlive
-    ,   eGrounded :: IsGrounded
     ,   eAI :: EnmyAI
     } deriving (Show,Eq)
 
@@ -79,7 +83,6 @@ data Item = NOITEM | Item
     ,   iHitbox :: Hitbox
     ,   iPhysics :: Physics
     ,   iAlive :: IsAlive
-    ,   iGrounded :: IsGrounded
     } deriving (Show,Eq)
 
 data Block = Block
@@ -95,11 +98,6 @@ data Platform = Platform
     ,   pltPosition :: GridIndex
     } deriving (Show,Eq)
 
-
-
--- data InfoToShow = ShowNothing
---                 | ShowNumber    Int
---                 | ShowChar      Char
 
 data GameState = GameState 
     {   lives :: Int
@@ -129,37 +127,36 @@ initialState = GameState
 mario :: Player
 mario = Player
     {   plyType = Mario
+    ,   plyHitbox = HB 12 16
     ,   plyPhysics = initPhysics
     ,   plyDirection = RIGHT
     ,   plyAlive = ALIVE
-    ,   plyGrounded = GROUNDED
     ,   plyMovement = NORMAL
     ,   plyPower = SMALL
     }
 
-marioPath :: Path
-marioPath = [(0.0,0.0),(40.0,0.0),(40.0,40.0),(0.0,40.0)]
-
 goomba :: Enemy
 goomba = Enemy
     {   eType = GOOMBA
+    ,   eHitbox = HB 16 16
     ,   ePhysics = initPhysics2
     ,   eDirection = RIGHT
     ,   eAlive = ALIVE
-    ,   eGrounded = GROUNDED
     ,   eAI = EASY
     }
 
 initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (-200.0,100.0)
-    ,   acc = (0.0,0.0)
+    ,   vel = (0.0,0.0)
+    ,   acc = (0.0,5000.0)
+    ,   gnd = AIRBORNE
     }
 
 initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (300.0,0.0)
+    ,   vel = (300.0,300.0)
     ,   acc = (0.0,0.0)
+    ,   gnd = AIRBORNE
     }
