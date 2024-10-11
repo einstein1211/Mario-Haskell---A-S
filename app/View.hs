@@ -26,7 +26,8 @@ viewPlayer (pl:pls) =
     Mario -> bmp : viewPlayer pls
     _     -> [blank]
     where 
-      bmp = uncurry translate (pos (plyPhysics pl)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString 12 16 (BitmapFormat BottomToTop PxRGBA) mariobmp True
+      bmp = uncurry translate (pos (plyPhysics pl)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString width height (BitmapFormat BottomToTop PxRGBA) (bytestring marioimg) True
+      (HB width height) = hitbox marioimg
 
 viewEnemy :: [Enemy] -> [Picture]
 viewEnemy [] = [blank]
@@ -36,7 +37,8 @@ viewEnemy (en:ens) =
     GOOMBA -> bmp : viewEnemy ens
     _     -> [blank]
     where
-      bmp = uncurry translate (pos (ePhysics en)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString 16 16 (BitmapFormat BottomToTop PxRGBA) goombabmp True
+      bmp = uncurry translate (pos (ePhysics en)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString width height (BitmapFormat BottomToTop PxRGBA) (bytestring goombaimg) True
+      (HB width height) = hitbox goombaimg
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
 --   ShowNothing   -> blank
