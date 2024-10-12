@@ -18,6 +18,8 @@ view = return . viewPure
 viewPure :: GameState -> Picture
 viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate)
 
+--TODO: Implement scale function
+
 viewPlayer :: [Player] -> [Picture]
 viewPlayer [] = [blank]
 viewPlayer (pl:pls) =
@@ -26,7 +28,7 @@ viewPlayer (pl:pls) =
     Mario -> bmp : viewPlayer pls
     _     -> [blank]
     where 
-      bmp = uncurry translate (pos (plyPhysics pl)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString width height (BitmapFormat BottomToTop PxRGBA) (bytestring marioimg) True
+      bmp = uncurry translate (pos (plyPhysics pl)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring marioimg) True
       (HB width height) = hitbox marioimg
 
 viewEnemy :: [Enemy] -> [Picture]
@@ -37,7 +39,7 @@ viewEnemy (en:ens) =
     GOOMBA -> bmp : viewEnemy ens
     _     -> [blank]
     where
-      bmp = uncurry translate (pos (ePhysics en)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString width height (BitmapFormat BottomToTop PxRGBA) (bytestring goombaimg) True
+      bmp = uncurry translate (pos (ePhysics en)) $ Scale 20 20 $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring goombaimg) True
       (HB width height) = hitbox goombaimg
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of

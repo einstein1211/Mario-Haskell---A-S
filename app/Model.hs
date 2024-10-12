@@ -9,8 +9,8 @@ type Xacc = Float
 type Yacc = Float
 type Acceleration = (Xacc,Yacc)
 data GridIndex = Grd Int Int deriving (Show,Eq)
-type Width = Int
-type Height = Int
+type Width = Float
+type Height = Float
 data Hitbox = HB Width Height deriving (Show,Eq)
 
 fps :: Int
@@ -54,12 +54,12 @@ data Physics = Physics
     ,   vel :: Velocity
     ,   acc :: Acceleration
     ,   gnd :: IsGrounded
+    ,   htb :: Hitbox
     } deriving(Show,Eq)
 
 -- | Data describing players in Game 
 data Player = Player
     {   plyType :: PlyrType
-    ,   plyHitbox :: Hitbox
     ,   plyPhysics :: Physics
     ,   plyDirection :: Direction
     ,   plyAlive :: IsAlive
@@ -70,7 +70,6 @@ data Player = Player
 -- | Data describing enemies in Game 
 data Enemy = Enemy
     {   eType :: EnmyType
-    ,   eHitbox :: Hitbox
     ,   ePhysics :: Physics
     ,   eDirection :: Direction
     ,   eAlive :: IsAlive
@@ -80,7 +79,6 @@ data Enemy = Enemy
 -- | Data descriving objects in Game (Coins & Powerups)
 data Item = NOITEM | Item
     {   iType :: ItmType
-    ,   iHitbox :: Hitbox
     ,   iPhysics :: Physics
     ,   iAlive :: IsAlive
     } deriving (Show,Eq)
@@ -127,7 +125,6 @@ initialState = GameState
 mario :: Player
 mario = Player
     {   plyType = Mario
-    ,   plyHitbox = HB 12 16
     ,   plyPhysics = initPhysics
     ,   plyDirection = RIGHT
     ,   plyAlive = ALIVE
@@ -138,7 +135,6 @@ mario = Player
 goomba :: Enemy
 goomba = Enemy
     {   eType = GOOMBA
-    ,   eHitbox = HB 16 16
     ,   ePhysics = initPhysics2
     ,   eDirection = RIGHT
     ,   eAlive = ALIVE
@@ -151,6 +147,7 @@ initPhysics = Physics
     ,   vel = (0.0,0.0)
     ,   acc = (0.0,5000.0)
     ,   gnd = AIRBORNE
+    ,   htb = HB 12 16
     }
 
 initPhysics2 :: Physics
@@ -159,4 +156,5 @@ initPhysics2 = Physics
     ,   vel = (300.0,300.0)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
+    ,   htb = HB 16 16    
     }
