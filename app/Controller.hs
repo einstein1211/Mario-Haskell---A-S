@@ -5,7 +5,7 @@ import Model
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
-grav = -100.0
+grav = -1000.0
 
 fallspd :: Float
 fallspd = -3000
@@ -37,11 +37,8 @@ physics secs gstate =
         x'  = x   + vx*s
         y'  = y   + vy*s
         vx' = vx  + ax*s
-        vy' = if vy < fallspd && ay < 0 then vy else vy + ay*s --Bad max speed implementation, TODO: make dedicated function
-        checks k = colissionCheck $ groundCheck $ gravity k
-    gravity :: Physics -> Physics
-    gravity p = p {vel = (vx,vy+grav)}
-      where (vx,vy) = vel p
+        vy' = if vy < fallspd && ay < 0 then vy else vy + (ay+grav)*s --Bad max speed implementation, TODO: make dedicated function
+        checks k = colissionCheck $ groundCheck k
     groundCheck :: Physics -> Physics
     groundCheck p = p {gnd = groundstate}
       where
@@ -60,11 +57,11 @@ physics secs gstate =
         (l,r) = (x-(w/2),x+(w/2))
         (b,t) = (y-(h/2),y+(h/2))
         x'
-          | r > fst uppbound = x-(fst uppbound - r)
+          | r > fst uppbound = x-(r - fst uppbound)
           | l < fst lowbound = x+(fst lowbound - l)
           | otherwise = x
         y'
-          | t > snd uppbound = y-(snd uppbound - t)
+          | t > snd uppbound = y-(t - snd uppbound)
           | b < snd lowbound = y+(snd lowbound - b)
           | otherwise = y
         (vx',ax') =

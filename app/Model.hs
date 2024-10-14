@@ -144,8 +144,8 @@ goomba = Enemy
 initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (0.0,0.0)
-    ,   acc = (0.0,5000.0)
+    ,   vel = (0.0,3000.0)
+    ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = HB 12 16
     }
