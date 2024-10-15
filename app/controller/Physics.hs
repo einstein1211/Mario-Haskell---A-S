@@ -52,7 +52,7 @@ groundCheck :: Physics -> Physics
 groundCheck p = p {gnd = groundstate}
   where
     (_,y) = pos p
-    HB _ h  = htb p
+    HB _ h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
     b = y-(h/2)
     groundstate = if b < snd lowbound then GROUNDED else AIRBORNE
 --Currently only checks for bottom of screen 
@@ -68,7 +68,7 @@ colissionCheck p = p {pos = (x',y'), vel = (vx',vy'), acc = (ax',ay')}
     (vx,vy) = vel p
     (ax,ay) = acc p
     g       = gnd p
-    HB w h  = htb p
+    HB w h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
     (b,t) = (y-(h/2),y+(h/2))
     x'

@@ -19,6 +19,9 @@ fps = 100
 res :: (Int,Int)
 res = (1280,720)
 
+scaling :: Float
+scaling = 4
+
 uppbound :: (Float,Float)
 uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
 
@@ -52,6 +55,7 @@ data HasWon     = WON   | LOST      | PLAYING
 data Physics = Physics
     {   pos :: Point
     ,   vel :: Velocity
+    ,   mxv :: Velocity
     ,   acc :: Acceleration
     ,   gnd :: IsGrounded
     ,   htb :: Hitbox
@@ -145,6 +149,7 @@ initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
     ,   vel = (0.0,3000.0)
+    ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = HB 12 16
@@ -154,6 +159,7 @@ initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
     ,   vel = (300.0,300.0)
+    ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = HB 16 16    
