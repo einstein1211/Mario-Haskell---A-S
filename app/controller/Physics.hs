@@ -45,15 +45,17 @@ playerPhysics g pl = pl {plyPhysics = phys'}
     down  = KeyDown `elem` keys
     left  = KeyLeft `elem` keys
     right = KeyRight `elem` keys
-    shift = KeyShiftL `elem` keys
+    shft = KeyShiftL `elem` keys
     phys  = plyPhysics pl
     (ax,ay) = acc phys
-    phys' = phys {acc = acc'}
+    phys' = phys {acc = acc',mxv = mv'}
+    mv'  = if shft then (1000,700) else (500,500)
     acc'
-      | up    = (ax,ay+1200)
+      | up    = (ax,ay+1000)
+      | space = (ax,ay+1000)
       | down  = (ax,ay) --TODO: See if the down key has a purpose
-      | left  = (ax-500,ay)
-      | right = (ax+500,ay)
+      | left  = (ax-300,ay)
+      | right = (ax+300,ay)
       | otherwise = (0,0)
 
 maxSpdCheck :: Physics -> Physics
