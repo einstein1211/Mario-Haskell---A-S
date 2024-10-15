@@ -15,7 +15,9 @@ viewObject c p pt =
       locup l (s:ss) = (fst l + fst s,snd l + snd s): locup l ss
 
 view :: GameState -> IO Picture
-view = return . viewPure
+view g = do
+  -- putStrLn $ show $ pressedKeys g
+  (return . viewPure) g
 
 viewPure :: GameState -> Picture
 viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate)
@@ -27,11 +29,12 @@ viewPlayer [] = [blank]
 viewPlayer (pl:pls) =
   case plyType pl of
     -- Mario -> viewObject green (pos (plyPhysics pl)) marioPath : viewPlayer pls
-    Mario -> bmp : viewPlayer pls
+    MARIO -> bmp : viewPlayer pls
     _     -> [blank]
     where 
-      bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring marioimg) True
-      (HB width height) = hitbox marioimg
+      img = if gnd (plyPhysics pl) == GROUNDED then marioStand else marioJump
+      bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+      (HB width height) = hitbox img
 
 viewEnemy :: [Enemy] -> [Picture]
 viewEnemy [] = [blank]
@@ -41,8 +44,10 @@ viewEnemy (en:ens) =
     GOOMBA -> bmp : viewEnemy ens
     _     -> [blank]
     where
-      bmp = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring goombaimg) True
-      (HB width height) = hitbox goombaimg
+      -- FIXME: DA HEK IS GOING ON HERE 
+      img = if (mod (round (fst (pos (ePhysics en)))) 100) > 50 then goombaWalk1 else goombaWalk2
+      bmp = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+      (HB width height) = hitbox img
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
 --   ShowNothing   -> blank
