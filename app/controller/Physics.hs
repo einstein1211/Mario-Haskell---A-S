@@ -1,5 +1,7 @@
 module Controller.Physics where
+
 import Model
+import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
 grav = -1000.0
@@ -18,7 +20,7 @@ physics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = obj  {plyPhysics = physics' secs (plyPhysics obj)}
+    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' secs (plyPhysics obj)}
     enf obj = obj  {ePhysics   = physics' secs (ePhysics obj)}
     itf obj = obj  {iPhysics   = physics' secs (iPhysics obj)}
 
@@ -33,8 +35,26 @@ physics' s p = checks p {pos = (x',y'), vel = (vx',vy')}
     vx' = vx  + ax*s
     vy' = vy + (ay+grav)*s
     checks k = colissionCheck $ maxSpdCheck $ groundCheck k
---Bad max speed implementation
---TODO: make dedicated function
+
+playerPhysics :: GameState -> Player -> Player
+playerPhysics g pl = pl {plyPhysics = phys'}
+  where
+    keys  = pressedKeys g
+    space = KeySpace `elem` keys
+    up    = KeyUp `elem` keys
+    down  = KeyDown `elem` keys
+    left  = KeyLeft `elem` keys
+    right = KeyRight `elem` keys
+    shift = KeyShiftL `elem` keys
+    phys  = plyPhysics pl
+    (ax,ay) = acc phys
+    phys' = phys {acc = acc'}
+    acc'
+      | up    = (ax,ay+1200)
+      | down  = (ax,ay) --TODO: See if the down key has a purpose
+      | left  = (ax-500,ay)
+      | right = (ax+500,ay)
+      | otherwise = (0,0)
 
 maxSpdCheck :: Physics -> Physics
 maxSpdCheck p = p {vel = (vx',vy')}
@@ -54,7 +74,7 @@ groundCheck p = p {gnd = groundstate}
     (_,y) = pos p
     HB _ h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
     b = y-(h/2)
-    groundstate = if b < snd lowbound then GROUNDED else AIRBORNE
+    groundstate = if b-1 < snd lowbound then GROUNDED else AIRBORNE --FIXME: Dit is garbage, fix later
 --Currently only checks for bottom of screen 
 --TODO: implement on all tops of platforms
 
@@ -79,11 +99,11 @@ colissionCheck p = p {pos = (x',y'), vel = (vx',vy'), acc = (ax',ay')}
       | t > snd uppbound = y-(t - snd uppbound)
       | b < snd lowbound = y+(snd lowbound - b)
       | otherwise = y
-    (vx',ax') =
-      case g of
-        GROUNDED -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else if vx > 0 then (vx,-friction) else if vx == 0 then (vx,0) else (vx,friction)
-        _        -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
+    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
+      -- case g of
+      --   GROUNDED -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else if vx > 0 then (vx,ax-friction) else if vx == 0 then (vx,0) else (vx,ax+friction)
+      --   AIRBORNE -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
     (vy',ay') =
       case g of
         GROUNDED -> if vy < 0 then (0,0) else (vy,ay)
-        _        -> (vy,ay)
+        AIRBORNE  -> (vy,ay)

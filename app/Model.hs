@@ -1,6 +1,7 @@
 module Model where
 
 import Graphics.Gloss
+import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 
 type Xvel = Float 
 type Yvel = Float
@@ -20,7 +21,7 @@ res :: (Int,Int)
 res = (1280,720)
 
 scaling :: Float
-scaling = 4
+scaling = 8
 
 uppbound :: (Float,Float)
 uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
@@ -29,7 +30,7 @@ lowbound :: (Float,Float)
 lowbound = (-fst uppbound,-snd uppbound)
 -- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
 
-data PlyrType   = Mario | Luigi
+data PlyrType   = MARIO | LUIGI
     deriving (Show,Eq)
 data EnmyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA
     deriving (Show,Eq)
@@ -111,6 +112,7 @@ data GameState = GameState
     ,   items :: [Item]
     ,   blocks :: [Block]
     ,   platforms :: [Platform]
+    ,   pressedKeys :: [SpecialKey]
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -124,11 +126,12 @@ initialState = GameState
     ,   items = []
     ,   blocks = []
     ,   platforms = []
+    ,   pressedKeys = []
     }
 
 mario :: Player
 mario = Player
-    {   plyType = Mario
+    {   plyType = MARIO
     ,   plyPhysics = initPhysics
     ,   plyDirection = RIGHT
     ,   plyAlive = ALIVE
@@ -149,7 +152,7 @@ initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
     ,   vel = (0.0,3000.0)
-    ,   mxv = (3000,3000)
+    ,   mxv = (500,500)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = HB 12 16
