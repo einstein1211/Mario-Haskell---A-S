@@ -1,5 +1,4 @@
 module Controller.Physics where
-
 import Model
 
 grav :: Float
@@ -32,10 +31,22 @@ physics' s p = checks p {pos = (x',y'), vel = (vx',vy')}
     x'  = x   + vx*s
     y'  = y   + vy*s
     vx' = vx  + ax*s
-    vy' = if vy < fallspd && ay < 0 then vy else vy + (ay+grav)*s 
-    checks k = colissionCheck $ groundCheck k
+    vy' = vy + (ay+grav)*s
+    checks k = colissionCheck $ maxSpdCheck $ groundCheck k
 --Bad max speed implementation
 --TODO: make dedicated function
+
+maxSpdCheck :: Physics -> Physics
+maxSpdCheck p = p {vel = (vx',vy')}
+  where
+    (vx,vy)   = vel p
+    (mvx,mvy) = mxv p
+    vx' | vx > mvx = mvx
+        | vx < (-mvx) = (-mvx)
+        | otherwise = vx
+    vy' | vy > mvy = mvy
+        | vy < (-mvy) = (-mvy)
+        | otherwise = vy
 
 groundCheck :: Physics -> Physics
 groundCheck p = p {gnd = groundstate}
@@ -43,7 +54,7 @@ groundCheck p = p {gnd = groundstate}
     (_,y) = pos p
     HB _ h  = htb p
     b = y-(h/2)
-    groundstate = if b < snd lowbound then GROUNDED else AIRBORNE 
+    groundstate = if b < snd lowbound then GROUNDED else AIRBORNE
 --Currently only checks for bottom of screen 
 --TODO: implement on all tops of platforms
 
