@@ -40,6 +40,8 @@ data ItmType    = COIN  | HIDDENCOIN| MUSHROOM | FIREFLOWER | STAR
     deriving (Show,Eq)
 data BlckType   = BRICK | BLOCK     | EMPTYBLOCK
     deriving (Show,Eq)
+data PltType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
+    deriving (Show,Eq)
 data Movement   = NORMAL| RUNNING   | CROUCHED
     deriving (Show,Eq)
 data IsGrounded = GROUNDED | AIRBORNE
@@ -97,10 +99,10 @@ data Block = Block
     } deriving (Show,Eq)
 
 data Platform = Platform
-    {   pltHitbox :: Hitbox
-    ,   pltPosition :: GridIndex
+    {   pltType :: 
+    ,   pltHitbox :: Hitbox
+    ,   pltPosition :: GridIndex 
     } deriving (Show,Eq)
-
 
 data GameState = GameState 
     {   lives :: Int
@@ -122,10 +124,10 @@ initialState = GameState
     ,   time = 0.0
     ,   status = PLAYING
     ,   players = [mario]
-    ,   enemies = [goomba,goomba]
+    ,   enemies = [goomba,goomba2]
     ,   items = []
     ,   blocks = []
-    ,   platforms = []
+    ,   platforms = [] --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
 
@@ -148,6 +150,15 @@ goomba = Enemy
     ,   eAI = EASY
     }
 
+goomba2 :: Enemy
+goomba2 = Enemy
+    {   eType = GOOMBA
+    ,   ePhysics = initPhysics3
+    ,   eDirection = RIGHT
+    ,   eAlive = ALIVE
+    ,   eAI = EASY
+    }
+
 initPhysics :: Physics
 initPhysics = Physics
     {   pos = (0.0,0.0)
@@ -162,6 +173,16 @@ initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
     ,   vel = (400.0,300.0)
+    ,   mxv = (3000,3000)
+    ,   acc = (0.0,0.0)
+    ,   gnd = AIRBORNE
+    ,   htb = HB 16 16    
+    }
+
+initPhysics3 :: Physics
+initPhysics3 = Physics
+    {   pos = (0.0,0.0)
+    ,   vel = (-400.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
