@@ -2,6 +2,7 @@ module Controller.Physics where
 
 import Model.Model
 import Model.Basic
+import Model.Platforms
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
@@ -21,12 +22,12 @@ physics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' secs (plyPhysics obj)}
-    enf obj = obj  {ePhysics   = physics' secs (ePhysics obj)}
-    itf obj = obj  {iPhysics   = physics' secs (iPhysics obj)}
+    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' gstate secs (plyPhysics obj)}
+    enf obj = obj  {ePhysics   = physics' gstate secs (ePhysics obj)}
+    itf obj = obj  {iPhysics   = physics' gstate secs (iPhysics obj)}
 
-physics' :: Float -> Physics -> Physics
-physics' s p = checks p {pos = (x',y'), vel = (vx',vy')}
+physics' :: GameState -> Float -> Physics -> Physics
+physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -35,7 +36,7 @@ physics' s p = checks p {pos = (x',y'), vel = (vx',vy')}
     y'  = y   + vy*s
     vx' = vx  + ax*s
     vy' = vy + (ay+grav)*s
-    checks k = colissionCheck $ maxSpdCheck $ groundCheck k
+    checks k = colissionCheck $ platformCheck g $ maxSpdCheck $ groundCheck k
 
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {plyPhysics = phys'}
@@ -81,7 +82,37 @@ groundCheck p = p {gnd = groundstate}
 --Currently only checks for bottom of screen 
 --TODO: implement on all tops of platforms
 
-
+platformCheck :: GameState -> Physics -> Physics
+platformCheck g p = foldr platformCheck' p plats
+  where
+    plats = platforms g
+    platformCheck' ::  Platform -> Physics -> Physics
+    platformCheck' plt obj 
+      | bo <= tp && bo > bp && ((ro > lp && rp > ro) || (lo < rp && lp < lo))  = obj {gnd = GROUNDED, pos = yup}
+      | to > bp && bo < bp && ((ro > lp && rp > ro) || (lo < rp && lp < lo))   = obj {pos = ydown, vel = (vx,-vy), acc = (ax,-ay)}
+      -- | (to > bp && bo < bp) || (bo < tp && bo > bp) && ro > lp && rp > ro     = obj {pos = xleft} --bugged
+      -- | (bo < tp && bp < bo) && ((ro > lp && rp > ro) || (lo < rp && lp < lo)) = obj {pos = pos'}
+      -- | (to > bp && tp > to) && ((ro > lp && rp > ro) || (lo < rp && lp < lo)) = obj {pos = pos'}
+      | otherwise = obj 
+      where
+        (ox,oy) = pos obj
+        (vx,vy) = vel obj
+        (ax,ay) = acc obj
+        yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
+        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px)),oy)
+        pos' 
+          | (px-ox) > (py-oy) && (px-ox) > (oy-py) = (px-(pw/2)-(ow/2),oy)
+          | (ox-px) > (py-oy) && (ox-px) > (oy-py) = (px+(pw/2)+(ow/2),oy)
+          -- | (oy-py) > (ox-px) && (oy-py) > (px-ox) = (ox,oy+(ph/2)+(oh/2))
+          | otherwise         = (ox,oy-(ph/2)-(oh/2))
+        HB ow oh  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
+        HB pw ph  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
+        (lo,ro) = (ox-(ow/2),ox+(ow/2))
+        (bo,to) = (oy-(oh/2),oy+(oh/2))
+        (px,py) = gridPos (pltPos plt)
+        (lp,rp) = (px-(pw/2),px+(pw/2))
+        (bp,tp) = (py-(ph/2),py+(ph/2))
 
 
 colissionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE

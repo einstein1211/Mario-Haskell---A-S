@@ -7,7 +7,6 @@ import Model.Basic
 import Model.Platforms
 import View.Images
 import Graphics.Gloss
-import Model.Model (blksz)
 
 viewObject :: Color -> Point -> Path -> Picture
 viewObject c p pt =
@@ -66,12 +65,6 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         STAIR   -> stair1
     (HB width height) = hitbox img
     bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
-
-gridPos :: GridIndex -> Point
-gridPos (GRD x y) = translate00 (x*blksz+(blksz/2),-(y * blksz)-(blksz/2))
-
-translate00 :: Point -> Point
-translate00 (x,y) = (x - fst uppbound,y + snd uppbound)
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of

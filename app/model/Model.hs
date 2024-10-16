@@ -5,25 +5,6 @@ import Model.Platforms
 
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 
-fps :: Int
-fps = 100
-
-res :: (Int,Int)
-res = (1024,768) --16 blocks wide, 12 blocks high
-
-scaling :: Float
-scaling = 4
-
-uppbound :: (Float,Float)
-uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
-
-lowbound :: (Float,Float)
-lowbound = (-fst uppbound,-snd uppbound)
--- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
-
-blksz :: Float
-blksz = 16*scaling
-
 data PlyrType   = MARIO | LUIGI
     deriving (Show,Eq)
 data EnmyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA
@@ -98,7 +79,7 @@ initialState = GameState
     ,   enemies = [goomba,goomba2]
     ,   items = []
     ,   blocks = []
-    ,   platforms = [pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
+    ,   platforms = [stair,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
 

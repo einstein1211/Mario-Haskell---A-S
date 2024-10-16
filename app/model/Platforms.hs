@@ -21,12 +21,20 @@ makeFloor = makeFloor' 15
             where
                 dirt    = Platform {pltType = DIRT, pltHitbox = HB 16 16, pltPos = GRD (fromIntegral x) 11}
 
+stair :: Platform
+stair = Platform
+    {   pltType = STAIR
+    ,   pltHitbox = HB 16 16
+    ,   pltPos = GRD 12 7
+    }
+
 pipe1 :: Platform
 pipe1 = Platform
     {   pltType = PIPETL
     ,   pltHitbox = HB 16 16
     ,   pltPos = GRD 4 9
     }
+
 pipe2 :: Platform
 pipe2 = Platform
     {   pltType = PIPETR
