@@ -1,20 +1,9 @@
 module Model.Model where
 
+import Model.Basic
 import Model.Platforms
 
-import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
-
-type Xvel = Float 
-type Yvel = Float
-type Velocity = (Xvel,Yvel)
-type Xacc = Float
-type Yacc = Float
-type Acceleration = (Xacc,Yacc)
-data GridIndex = Grd Int Int deriving (Show,Eq)
-type Width = Float
-type Height = Float
-data Hitbox = HB Width Height deriving (Show,Eq)
 
 fps :: Int
 fps = 100
@@ -44,25 +33,10 @@ data BlckType   = BRICK | BLOCK     | EMPTYBLOCK
     deriving (Show,Eq)
 data Movement   = NORMAL| RUNNING   | CROUCHED
     deriving (Show,Eq)
-data IsGrounded = GROUNDED | AIRBORNE
-    deriving (Show,Eq)
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)
-data Direction  = RIGHT | LEFT 
-    deriving(Show,Eq)
-data IsAlive    = ALIVE | DEAD 
-    deriving(Show,Eq)
 data HasWon     = WON   | LOST      | PLAYING
     deriving(Show,Eq)
-
-data Physics = Physics
-    {   pos :: Point
-    ,   vel :: Velocity
-    ,   mxv :: Velocity
-    ,   acc :: Acceleration
-    ,   gnd :: IsGrounded
-    ,   htb :: Hitbox
-    } deriving(Show,Eq)
 
 -- | Data describing players in Game 
 data Player = Player
@@ -121,7 +95,7 @@ initialState = GameState
     ,   enemies = [goomba,goomba2]
     ,   items = []
     ,   blocks = []
-    ,   platforms = [pipe1,pipe2,pipe3,pipe4] --TODO: replace with mapped column list
+    ,   platforms = []--pipe1,pipe2,pipe3,pipe4] --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
 

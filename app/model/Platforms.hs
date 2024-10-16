@@ -1,6 +1,6 @@
 module Model.Platforms where
 
-import Model.Model
+import Model.Basic
 
 data PltType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
     deriving (Show,Eq)

@@ -3,6 +3,7 @@
 module View.View where
 
 import Model.Model
+import Model.Basic
 import View.Images
 import Graphics.Gloss
 
