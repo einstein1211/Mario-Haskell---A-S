@@ -8,7 +8,7 @@ type Velocity = (Xvel,Yvel)
 type Xacc = Float
 type Yacc = Float
 type Acceleration = (Xacc,Yacc)
-data GridIndex = Grd Int Int deriving (Show,Eq)
+data GridIndex = GRD Float Float deriving (Show,Eq)
 type Width = Float
 type Height = Float
 data Hitbox = HB Width Height deriving (Show,Eq)
@@ -28,3 +28,4 @@ data Physics = Physics
     ,   gnd :: IsGrounded
     ,   htb :: Hitbox
     } deriving(Show,Eq)
+    

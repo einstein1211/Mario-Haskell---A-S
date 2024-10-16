@@ -4,8 +4,10 @@ module View.View where
 
 import Model.Model
 import Model.Basic
+import Model.Platforms
 import View.Images
 import Graphics.Gloss
+import Model.Model (blksz)
 
 viewObject :: Color -> Point -> Path -> Picture
 viewObject c p pt =
@@ -21,7 +23,7 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate)
+viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate)
 
 --TODO: Implement scale function
 
@@ -32,7 +34,7 @@ viewPlayer (pl:pls) =
     -- Mario -> viewObject green (pos (plyPhysics pl)) marioPath : viewPlayer pls
     MARIO -> bmp : viewPlayer pls
     _     -> [blank]
-    where 
+    where
       img = if gnd (plyPhysics pl) == GROUNDED then marioStand else marioJump
       bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
       (HB width height) = hitbox img
@@ -49,6 +51,28 @@ viewEnemy (en:ens) =
       img = if (mod (round (fst (pos (ePhysics en)))) 100) > 50 then goombaWalk1 else goombaWalk2
       bmp = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
       (HB width height) = hitbox img
+
+viewPlatform :: [Platform] -> [Picture]
+viewPlatform [] = [blank]
+viewPlatform (plt:plts) = bmp : viewPlatform plts
+  where
+    img =
+      case pltType plt of
+        PIPEL   -> pipe_l1
+        PIPER   -> pipe_r1
+        PIPETL  -> pipe_tl1
+        PIPETR  -> pipe_tr1
+        DIRT    -> dirt1
+        STAIR   -> stair1
+    (HB width height) = hitbox img
+    bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+
+gridPos :: GridIndex -> Point
+gridPos (GRD x y) = translate00 (x*blksz+(blksz/2),-(y * blksz)-(blksz/2))
+
+translate00 :: Point -> Point
+translate00 (x,y) = (x - fst uppbound,y + snd uppbound)
+
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
 --   ShowNothing   -> blank

@@ -28,7 +28,7 @@ inputKey e@(EventKey (SpecialKey key) _ _ _) gstate
   | otherwise =
     case key of
       KeyEsc   -> undefined--exitSuccess
-      _ -> undefined
+      _ -> error ":("
       where
         dkey = key `elem` directKey
 inputKey _ gstate = gstate -- Otherwise keep the same
