@@ -1,7 +1,7 @@
-module Images where
+module View.Images where
 
 import Data.ByteString as BS
-import Model
+import Model.Model
 
 data Image = Img
     {   hitbox :: Hitbox 

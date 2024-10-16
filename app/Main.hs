@@ -1,7 +1,7 @@
 module Main where
-import Model
+import Model.Model
 import Controller.Controller
-import View
+import View.View
 import Graphics.Gloss.Interface.IO.Game
 
 main :: IO ()

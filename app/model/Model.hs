@@ -1,4 +1,4 @@
-module Model where
+module Model.Model where
 
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
@@ -161,7 +161,7 @@ initPhysics = Physics
 initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (300.0,300.0)
+    ,   vel = (400.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE

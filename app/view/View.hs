@@ -1,9 +1,9 @@
 {-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
 {-# HLINT ignore "Use bimap" #-}
-module View where
+module View.View where
 
-import Model
-import Images
+import Model.Model
+import View.Images
 import Graphics.Gloss
 
 viewObject :: Color -> Point -> Path -> Picture

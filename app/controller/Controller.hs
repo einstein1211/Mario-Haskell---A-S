@@ -1,6 +1,6 @@
 module Controller.Controller where
 
-import Model
+import Model.Model
 import Controller.Physics
 import Graphics.Gloss.Interface.IO.Game
 

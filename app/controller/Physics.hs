@@ -1,6 +1,6 @@
 module Controller.Physics where
 
-import Model
+import Model.Model
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
