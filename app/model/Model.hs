@@ -1,5 +1,7 @@
 module Model.Model where
 
+import Model.Platforms
+
 import Graphics.Gloss
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 
@@ -39,8 +41,6 @@ data EnmyAI     = EASY  | MEDIUM    | HARD
 data ItmType    = COIN  | HIDDENCOIN| MUSHROOM | FIREFLOWER | STAR 
     deriving (Show,Eq)
 data BlckType   = BRICK | BLOCK     | EMPTYBLOCK
-    deriving (Show,Eq)
-data PltType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
     deriving (Show,Eq)
 data Movement   = NORMAL| RUNNING   | CROUCHED
     deriving (Show,Eq)
@@ -98,12 +98,6 @@ data Block = Block
     ,   bContents :: Item
     } deriving (Show,Eq)
 
-data Platform = Platform
-    {   pltType :: 
-    ,   pltHitbox :: Hitbox
-    ,   pltPosition :: GridIndex 
-    } deriving (Show,Eq)
-
 data GameState = GameState 
     {   lives :: Int
     ,   score :: Int
@@ -127,7 +121,7 @@ initialState = GameState
     ,   enemies = [goomba,goomba2]
     ,   items = []
     ,   blocks = []
-    ,   platforms = [] --TODO: replace with mapped column list
+    ,   platforms = [pipe1,pipe2,pipe3,pipe4] --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
 
