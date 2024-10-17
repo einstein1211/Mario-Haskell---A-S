@@ -32,11 +32,14 @@ physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
     (x,y)   = pos p
     (vx,vy) = vel p
     (ax,ay) = acc p
+    grounded = gnd p == GROUNDED
     x'  = x   + vx*s
     y'  = y   + vy*s
     vx' = vx  + ax*s
-    vy' = vy + (ay+grav)*s
-    checks k = colissionCheck $ platformCheck g $ maxSpdCheck $ groundCheck k
+    vy'
+      | grounded && vy<0  = 0
+      | otherwise         = vy + (ay+grav)*s
+    checks k = maxSpdCheck $ colissionCheck $ platformCheck g k
 
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {plyPhysics = phys'}
@@ -66,78 +69,61 @@ maxSpdCheck p = p {vel = (vx',vy')}
     (vx,vy)   = vel p
     (mvx,mvy) = mxv p
     vx' | vx > mvx = mvx
-        | vx < (-mvx) = (-mvx)
+        | vx < (-mvx) = -mvx
         | otherwise = vx
     vy' | vy > mvy = mvy
-        | vy < (-mvy) = (-mvy)
+        | vy < (-mvy) = -mvy
         | otherwise = vy
 
-groundCheck :: Physics -> Physics
-groundCheck p = p {gnd = groundstate}
+inHitbox :: Point -> Point -> Hitbox -> Bool
+inHitbox (x1,y1) (x2,y2) (HB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
-    (_,y) = pos p
-    HB _ h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
-    b = y-(h/2)
-    groundstate = if b-1 < snd lowbound then GROUNDED else AIRBORNE --FIXME: Dit is garbage, fix later
---Currently only checks for bottom of screen 
---TODO: implement on all tops of platforms
+    (lp,rp) = (x2-(w/2)+2,x2+(w/2)-2)
+    (bp,tp) = (y2-(h/2),y2+(h/2)+1)
+
+intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
+intersects (x1,y1) (HB w1 h1) p2 hb2 =
+  inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2
+    where
+      c1 = (x1+(w1/2),y1+(h1/2))
+      c2 = (x1-(w1/2),y1+(h1/2))
+      c3 = (x1+(w1/2),y1-(h1/2))
+      c4 = (x1-(w1/2),y1-(h1/2))
 
 platformCheck :: GameState -> Physics -> Physics
-platformCheck g p = foldr platformCheck' p plats
+platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
   where
     plats = platforms g
     platformCheck' ::  Platform -> Physics -> Physics
-    platformCheck' plt obj 
-      | bo <= tp && bo > bp && ((ro > lp && rp > ro) || (lo < rp && lp < lo))  = obj {gnd = GROUNDED, pos = yup}
-      | to > bp && bo < bp && ((ro > lp && rp > ro) || (lo < rp && lp < lo))   = obj {pos = ydown, vel = (vx,-vy), acc = (ax,-ay)}
-      -- | (to > bp && bo < bp) || (bo < tp && bo > bp) && ro > lp && rp > ro     = obj {pos = xleft} --bugged
-      -- | (bo < tp && bp < bo) && ((ro > lp && rp > ro) || (lo < rp && lp < lo)) = obj {pos = pos'}
-      -- | (to > bp && tp > to) && ((ro > lp && rp > ro) || (lo < rp && lp < lo)) = obj {pos = pos'}
+    platformCheck' plt obj
+      | intersects opos ohb ppos phb = obj'
       | otherwise = obj 
       where
-        (ox,oy) = pos obj
+        opos@(ox,oy) = pos obj
+        ppos@(px,py) = gridPos (pltPos plt)
         (vx,vy) = vel obj
-        (ax,ay) = acc obj
+        (ax,_) = acc obj
+        ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
+        phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
+        obj'
+          | abs(ox-px)>abs(oy-py) = sides
+          | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
+          | otherwise             = obj {gnd = GROUNDED, pos = yup}
+        sides 
+          | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
+          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)} 
         yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
         ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
-        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px)),oy)
-        pos' 
-          | (px-ox) > (py-oy) && (px-ox) > (oy-py) = (px-(pw/2)-(ow/2),oy)
-          | (ox-px) > (py-oy) && (ox-px) > (oy-py) = (px+(pw/2)+(ow/2),oy)
-          -- | (oy-py) > (ox-px) && (oy-py) > (px-ox) = (ox,oy+(ph/2)+(oh/2))
-          | otherwise         = (ox,oy-(ph/2)-(oh/2))
-        HB ow oh  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
-        HB pw ph  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
-        (lo,ro) = (ox-(ow/2),ox+(ow/2))
-        (bo,to) = (oy-(oh/2),oy+(oh/2))
-        (px,py) = gridPos (pltPos plt)
-        (lp,rp) = (px-(pw/2),px+(pw/2))
-        (bp,tp) = (py-(ph/2),py+(ph/2))
-
+        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
 
 colissionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-colissionCheck p = p {pos = (x',y'), vel = (vx',vy'), acc = (ax',ay')}
+colissionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
     (ax,ay) = acc p
     g       = gnd p
-    HB w h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
+    w = (\(HB c d) -> c*scaling) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
-    (b,t) = (y-(h/2),y+(h/2))
-    x'
-      | r > fst uppbound = x-(r - fst uppbound)
-      | l < fst lowbound = x+(fst lowbound - l)
-      | otherwise = x
-    y'
-      | t > snd uppbound = y-(t - snd uppbound)
-      | b < snd lowbound = y+(snd lowbound - b)
-      | otherwise = y
-    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
-      -- case g of
-      --   GROUNDED -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else if vx > 0 then (vx,ax-friction) else if vx == 0 then (vx,0) else (vx,ax+friction)
-      --   AIRBORNE -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
-    (vy',ay') =
-      case g of
-        GROUNDED -> if vy < 0 then (0,0) else (vy,ay)
-        AIRBORNE  -> (vy,ay)
+    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,0) else (vx,ax)

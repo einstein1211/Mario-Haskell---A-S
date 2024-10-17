@@ -1,5 +1,3 @@
-{-# OPTIONS_GHC -Wno-unrecognised-pragmas #-}
-{-# HLINT ignore "Use bimap" #-}
 module View.View where
 
 import Model.Model
@@ -30,7 +28,6 @@ viewPlayer :: [Player] -> [Picture]
 viewPlayer [] = [blank]
 viewPlayer (pl:pls) =
   case plyType pl of
-    -- Mario -> viewObject green (pos (plyPhysics pl)) marioPath : viewPlayer pls
     MARIO -> bmp : viewPlayer pls
     _     -> [blank]
     where
@@ -47,8 +44,11 @@ viewEnemy (en:ens) =
     _     -> [blank]
     where
       -- FIXME: DA HEK IS GOING ON HERE 
-      img = if (mod (round (fst (pos (ePhysics en)))) 100) > 50 then goombaWalk1 else goombaWalk2
-      bmp = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+      img = if mod (round (fst (pos (ePhysics en)))) 100 > 50 then goombaWalk1 else goombaWalk2
+      bmp 
+        | gnd (ePhysics en) == GROUNDED = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ bmp'
+        | otherwise = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ rotate 180 bmp'
+      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
       (HB width height) = hitbox img
 
 viewPlatform :: [Platform] -> [Picture]

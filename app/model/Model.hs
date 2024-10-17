@@ -79,7 +79,8 @@ initialState = GameState
     ,   enemies = [goomba,goomba2]
     ,   items = []
     ,   blocks = []
-    ,   platforms = [stair,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
+    -- ,   platforms = []
+    ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
 
@@ -124,19 +125,19 @@ initPhysics = Physics
 initPhysics2 :: Physics
 initPhysics2 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (400.0,300.0)
+    ,   vel = (200.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = HB 16 16    
+    ,   htb = HB 14 16    
     }
 
 initPhysics3 :: Physics
 initPhysics3 = Physics
     {   pos = (0.0,0.0)
-    ,   vel = (-400.0,300.0)
+    ,   vel = (-200.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = HB 16 16    
+    ,   htb = HB 14 16    
     }

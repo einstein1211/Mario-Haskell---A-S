@@ -12,6 +12,9 @@ data Platform = Platform
     ,   pltPos :: GridIndex
     } deriving (Show,Eq)
 
+platformHB :: Hitbox
+platformHB = HB 16 16
+
 makeFloor :: [Platform]
 makeFloor = makeFloor' 15
     where
@@ -19,39 +22,46 @@ makeFloor = makeFloor' 15
         makeFloor' (-1) = []
         makeFloor' x    = dirt : makeFloor' (x-1) 
             where
-                dirt    = Platform {pltType = DIRT, pltHitbox = HB 16 16, pltPos = GRD (fromIntegral x) 11}
+                dirt    = Platform {pltType = DIRT, pltHitbox = platformHB, pltPos = GRD (fromIntegral x) 11}
 
 stair :: Platform
 stair = Platform
     {   pltType = STAIR
-    ,   pltHitbox = HB 16 16
+    ,   pltHitbox = platformHB
     ,   pltPos = GRD 12 7
+    }
+
+stair2 :: Platform
+stair2 = Platform
+    {   pltType = STAIR
+    ,   pltHitbox = platformHB
+    ,   pltPos = GRD 13 7
     }
 
 pipe1 :: Platform
 pipe1 = Platform
     {   pltType = PIPETL
-    ,   pltHitbox = HB 16 16
-    ,   pltPos = GRD 4 9
+    ,   pltHitbox = platformHB
+    ,   pltPos = GRD 7 9
     }
 
 pipe2 :: Platform
 pipe2 = Platform
     {   pltType = PIPETR
-    ,   pltHitbox = HB 16 16
-    ,   pltPos = GRD 5 9
+    ,   pltHitbox = platformHB
+    ,   pltPos = GRD 8 9
     }
 
 pipe3 :: Platform
 pipe3 = Platform
     {   pltType = PIPEL
-    ,   pltHitbox = HB 16 16
-    ,   pltPos = GRD 4 10
+    ,   pltHitbox = platformHB
+    ,   pltPos = GRD 7 10
     }
 
 pipe4 :: Platform
 pipe4 = Platform
     {   pltType = PIPER
-    ,   pltHitbox = HB 16 16
-    ,   pltPos = GRD 5 10
+    ,   pltHitbox = platformHB
+    ,   pltPos = GRD 8 10
     }
