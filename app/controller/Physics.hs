@@ -6,7 +6,7 @@ import Model.Platforms
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
-grav = -1000.0
+grav = -2000.0
 
 fallspd :: Float
 fallspd = -3000
@@ -52,15 +52,22 @@ playerPhysics g pl = pl {plyPhysics = phys'}
     right = KeyRight `elem` keys
     shft = KeyShiftL `elem` keys
     phys  = plyPhysics pl
+    grounded = gnd phys == GROUNDED
     (ax,ay) = acc phys
+    mov
+      | grounded = 300
+      | otherwise= 100
+    jump
+      | grounded = 1500
+      | otherwise = 0
     phys' = phys {acc = acc',mxv = mv'}
-    mv'  = if shft then (1000,700) else (500,500)
+    mv'  = if shft then (700,700) else (300,500)
     acc'
-      | up    = (ax,ay+1000)
-      | space = (ax,ay+1000)
+      | up    = (ax,ay+jump)
+      | space = (ax,ay+jump)
       | down  = (ax,ay) --TODO: See if the down key has a purpose
-      | left  = (ax-300,ay)
-      | right = (ax+300,ay)
+      | left  = (ax-mov,ay)
+      | right = (ax+mov,ay)
       | otherwise = (0,0)
 
 maxSpdCheck :: Physics -> Physics
@@ -118,7 +125,7 @@ platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
         xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
 
 collisionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
+collisionCheck p = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -126,4 +133,8 @@ collisionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
     g       = gnd p
     w = (\(HB c d) -> c*scaling) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
-    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,0) else (vx,ax)
+    (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
+    x'
+      | r > fst uppbound = x-1
+      | l < fst lowbound = x+1
+      | otherwise = x
