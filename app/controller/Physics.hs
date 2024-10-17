@@ -39,7 +39,7 @@ physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
     vy'
       | grounded && vy<0  = 0
       | otherwise         = vy + (ay+grav)*s
-    checks k = maxSpdCheck $ colissionCheck $ platformCheck g k
+    checks k = maxSpdCheck $ collisionCheck $ platformCheck g k
 
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {plyPhysics = phys'}
@@ -102,7 +102,7 @@ platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
         opos@(ox,oy) = pos obj
         ppos@(px,py) = gridPos (pltPos plt)
         (vx,vy) = vel obj
-        (ax,_) = acc obj
+        (ax,ay) = acc obj
         ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
         phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
         obj'
@@ -117,8 +117,8 @@ platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
         xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
         xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
 
-colissionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-colissionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
+collisionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
+collisionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
   where
     (x,y)   = pos p
     (vx,vy) = vel p

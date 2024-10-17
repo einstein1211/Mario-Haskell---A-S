@@ -13,7 +13,7 @@ data Platform = Platform
     } deriving (Show,Eq)
 
 platformHB :: Hitbox
-platformHB = HB 16 16
+platformHB = HB 17 16
 
 makeFloor :: [Platform]
 makeFloor = makeFloor' 15
