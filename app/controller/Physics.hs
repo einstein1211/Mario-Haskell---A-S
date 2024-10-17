@@ -1,6 +1,8 @@
 module Controller.Physics where
 
 import Model.Model
+import Model.Basic
+import Model.Platforms
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
@@ -20,21 +22,24 @@ physics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' secs (plyPhysics obj)}
-    enf obj = obj  {ePhysics   = physics' secs (ePhysics obj)}
-    itf obj = obj  {iPhysics   = physics' secs (iPhysics obj)}
+    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' gstate secs (plyPhysics obj)}
+    enf obj = obj  {ePhysics   = physics' gstate secs (ePhysics obj)}
+    itf obj = obj  {iPhysics   = physics' gstate secs (iPhysics obj)}
 
-physics' :: Float -> Physics -> Physics
-physics' s p = checks p {pos = (x',y'), vel = (vx',vy')}
+physics' :: GameState -> Float -> Physics -> Physics
+physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
     (ax,ay) = acc p
+    grounded = gnd p == GROUNDED
     x'  = x   + vx*s
     y'  = y   + vy*s
     vx' = vx  + ax*s
-    vy' = vy + (ay+grav)*s
-    checks k = colissionCheck $ maxSpdCheck $ groundCheck k
+    vy'
+      | grounded && vy<0  = 0
+      | otherwise         = vy + (ay+grav)*s
+    checks k = maxSpdCheck $ collisionCheck $ platformCheck g k
 
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {plyPhysics = phys'}
@@ -64,48 +69,61 @@ maxSpdCheck p = p {vel = (vx',vy')}
     (vx,vy)   = vel p
     (mvx,mvy) = mxv p
     vx' | vx > mvx = mvx
-        | vx < (-mvx) = (-mvx)
+        | vx < (-mvx) = -mvx
         | otherwise = vx
     vy' | vy > mvy = mvy
-        | vy < (-mvy) = (-mvy)
+        | vy < (-mvy) = -mvy
         | otherwise = vy
 
-groundCheck :: Physics -> Physics
-groundCheck p = p {gnd = groundstate}
+inHitbox :: Point -> Point -> Hitbox -> Bool
+inHitbox (x1,y1) (x2,y2) (HB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
-    (_,y) = pos p
-    HB _ h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
-    b = y-(h/2)
-    groundstate = if b-1 < snd lowbound then GROUNDED else AIRBORNE --FIXME: Dit is garbage, fix later
---Currently only checks for bottom of screen 
---TODO: implement on all tops of platforms
+    (lp,rp) = (x2-(w/2)+2,x2+(w/2)-2)
+    (bp,tp) = (y2-(h/2),y2+(h/2)+1)
 
+intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
+intersects (x1,y1) (HB w1 h1) p2 hb2 =
+  inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2
+    where
+      c1 = (x1+(w1/2),y1+(h1/2))
+      c2 = (x1-(w1/2),y1+(h1/2))
+      c3 = (x1+(w1/2),y1-(h1/2))
+      c4 = (x1-(w1/2),y1-(h1/2))
 
+platformCheck :: GameState -> Physics -> Physics
+platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
+  where
+    plats = platforms g
+    platformCheck' ::  Platform -> Physics -> Physics
+    platformCheck' plt obj
+      | intersects opos ohb ppos phb = obj'
+      | otherwise = obj 
+      where
+        opos@(ox,oy) = pos obj
+        ppos@(px,py) = gridPos (pltPos plt)
+        (vx,vy) = vel obj
+        (ax,ay) = acc obj
+        ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
+        phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
+        obj'
+          | abs(ox-px)>abs(oy-py) = sides
+          | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
+          | otherwise             = obj {gnd = GROUNDED, pos = yup}
+        sides 
+          | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
+          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)} 
+        yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
+        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
 
-
-colissionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-colissionCheck p = p {pos = (x',y'), vel = (vx',vy'), acc = (ax',ay')}
+collisionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
+collisionCheck p = p {vel = (vx',vy), acc = (ax',ay)}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
     (ax,ay) = acc p
     g       = gnd p
-    HB w h  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb p)
+    w = (\(HB c d) -> c*scaling) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
-    (b,t) = (y-(h/2),y+(h/2))
-    x'
-      | r > fst uppbound = x-(r - fst uppbound)
-      | l < fst lowbound = x+(fst lowbound - l)
-      | otherwise = x
-    y'
-      | t > snd uppbound = y-(t - snd uppbound)
-      | b < snd lowbound = y+(snd lowbound - b)
-      | otherwise = y
-    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
-      -- case g of
-      --   GROUNDED -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else if vx > 0 then (vx,ax-friction) else if vx == 0 then (vx,0) else (vx,ax+friction)
-      --   AIRBORNE -> if r > fst uppbound || l < fst lowbound then (-vx,-ax) else (vx,ax)
-    (vy',ay') =
-      case g of
-        GROUNDED -> if vy < 0 then (0,0) else (vy,ay)
-        AIRBORNE  -> (vy,ay)
+    (vx',ax') = if r > fst uppbound || l < fst lowbound then (-vx,0) else (vx,ax)

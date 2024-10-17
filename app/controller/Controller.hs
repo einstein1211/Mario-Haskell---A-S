@@ -11,7 +11,7 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
 step :: Float -> GameState -> IO GameState
 step secs gstate =
-  return $ physics secs gstate
+  return $ physics secs gstate {time = time gstate + secs}
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
@@ -28,7 +28,7 @@ inputKey e@(EventKey (SpecialKey key) _ _ _) gstate
   | otherwise =
     case key of
       KeyEsc   -> undefined--exitSuccess
-      _ -> undefined
+      _ -> error ":("
       where
         dkey = key `elem` directKey
 inputKey _ gstate = gstate -- Otherwise keep the same

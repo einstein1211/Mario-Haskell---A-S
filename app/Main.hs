@@ -1,5 +1,6 @@
 module Main where
 import Model.Model
+import Model.Basic
 import Controller.Controller
 import View.View
 import Graphics.Gloss.Interface.IO.Game
