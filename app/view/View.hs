@@ -79,8 +79,8 @@ viewBlock (blck:blcks) = bmp : viewBlock blcks
     img =
       case bType blck of
         BRICK       -> brick1
-        BLOCK       -> undefined
-        EMPTYBLOCK  -> undefined
+        QBLOCK      -> question1f1
+        EMPTYBLOCK  -> emptyblock1
         INVISBLOCK  -> undefined
     HB width height = hitbox img
     bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True

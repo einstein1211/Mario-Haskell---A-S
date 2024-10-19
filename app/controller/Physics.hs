@@ -43,7 +43,7 @@ applyPhysics' g s e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     vy'
       | grounded && vy<0  = 0
       | otherwise         = vy + (ay+grav)*s
-    checks k = maxSpdCheck $ collisionCheck $ platformCheck g k
+    checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt'}
@@ -111,6 +111,33 @@ intersects (x1,y1) (MkHB w1 h1) p2 hb2 =
       c2 = (x1-(w1/2),y1+(h1/2))
       c3 = (x1+(w1/2),y1-(h1/2))
       c4 = (x1-(w1/2),y1-(h1/2))
+
+blockCheck :: GameState -> Physics -> Physics
+blockCheck g p = foldr blockCheck' p {gnd=AIRBORNE} blks
+  where
+    blks = blocks g
+    blockCheck' ::  Block -> Physics -> Physics
+    blockCheck' blk obj
+      | intersects opos ohb ppos phb = obj'
+      | otherwise = obj 
+      where
+        opos@(ox,oy) = pos obj
+        ppos@(px,py) = gridPos (bPos blk)
+        (vx,vy) = vel obj
+        (ax,ay) = acc obj
+        ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
+        phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (bHitbox blk)
+        obj'
+          | abs(ox-px)>abs(oy-py) = sides
+          | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
+          | otherwise             = obj {gnd = GROUNDED, pos = yup}
+        sides 
+          | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
+          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)} 
+        yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
+        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
 
 platformCheck :: GameState -> Entity -> Entity
 platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e {physics = p {gnd=AIRBORNE}} plats
