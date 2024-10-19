@@ -22,7 +22,7 @@ physics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' gstate secs (plyPhysics obj)}
+    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' gstate secs (plyPhysics obj), plyJumpTime = plyJumpTime obj - secs}
     enf obj = obj  {ePhysics   = physics' gstate secs (ePhysics obj)}
     itf obj = obj  {iPhysics   = physics' gstate secs (iPhysics obj)}
 
@@ -42,33 +42,43 @@ physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g k
 
 playerPhysics :: GameState -> Player -> Player
-playerPhysics g pl = pl {plyPhysics = phys'}
+playerPhysics g pl = 
+  pl {plyPhysics = phys',plyJumpTime = jmpt'}
   where
     keys  = pressedKeys g
     space = KeySpace `elem` keys
     up    = KeyUp `elem` keys
-    down  = KeyDown `elem` keys
+    -- down  = KeyDown `elem` keys
     left  = KeyLeft `elem` keys
     right = KeyRight `elem` keys
     shft = KeyShiftL `elem` keys
+    none = not(space||up||left||right)
     phys  = plyPhysics pl
     grounded = gnd phys == GROUNDED
     (ax,ay) = acc phys
-    mov
-      | grounded = 300
-      | otherwise= 100
+    movl
+      | grounded&&left = -300
+      | (not grounded)&&left= -100
+      | otherwise = 0
+    movr
+      | grounded&&right = 300
+      | (not grounded)&&right= 100
+      | otherwise = 0
     jump
-      | grounded = 1500
+      | grounded&&jmpt>0 = 4*(-grav)
+      | jmpt>0           = -grav
       | otherwise = 0
     phys' = phys {acc = acc',mxv = mv'}
-    mv'  = if shft then (700,700) else (300,500)
+    mv'  = if shft then (700,800) else (300,800)
     acc'
-      | up    = (ax,ay+jump)
-      | space = (ax,ay+jump)
-      | down  = (ax,ay) --TODO: See if the down key has a purpose
-      | left  = (ax-mov,ay)
-      | right = (ax+mov,ay)
-      | otherwise = (0,0)
+      | none = (0,0)
+      | otherwise = (ax+movl+movr,ay+jump+grav)
+    jmpt = plyJumpTime pl
+    jmpt'
+      | up&&grounded      = 0.5
+      | space&&grounded   = 0.5
+      | not(up||space)    = 0
+      | otherwise         = jmpt
 
 maxSpdCheck :: Physics -> Physics
 maxSpdCheck p = p {vel = (vx',vy')}

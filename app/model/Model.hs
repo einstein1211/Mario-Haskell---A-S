@@ -30,6 +30,7 @@ data Player = Player
     ,   plyAlive :: IsAlive
     ,   plyMovement :: Movement
     ,   plyPower :: Status
+    ,   plyJumpTime :: Float
     } deriving (Show,Eq)
 
 -- | Data describing enemies in Game 
@@ -92,6 +93,7 @@ mario = Player
     ,   plyAlive = ALIVE
     ,   plyMovement = NORMAL
     ,   plyPower = SMALL
+    ,   plyJumpTime = 0
     }
 
 goomba :: Enemy
