@@ -7,7 +7,6 @@ import Model.Enemy
 import Model.Block
 import Model.Item
 import Model.Platform
-
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float

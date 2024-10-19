@@ -33,13 +33,8 @@ initialState = MkGameState
     ,   players = [mario]
     ,   enemies = [goomba,goomba2]
     ,   items = []
-    ,   blocks = []
+    ,   blocks = [brick]
     -- ,   platforms = []
     ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
     }
-
-
-
-
-

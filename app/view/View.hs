@@ -24,7 +24,7 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate)
+viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate) ++ viewBlock (blocks gstate)
 
 --TODO: Implement scale function
 
@@ -71,6 +71,19 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         STAIR   -> stair1
     (MkHB width height) = hitbox img
     bmp = uncurry translate (gridPos (pfPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+
+viewBlock :: [Block] -> [Picture]
+viewBlock [] = [blank]
+viewBlock (blck:blcks) = bmp : viewBlock blcks
+  where
+    img =
+      case bType blck of
+        BRICK       -> brick1
+        BLOCK       -> undefined
+        EMPTYBLOCK  -> undefined
+        INVISBLOCK  -> undefined
+    HB width height = hitbox img
+    bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
