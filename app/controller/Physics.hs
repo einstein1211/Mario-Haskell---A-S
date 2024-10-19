@@ -3,6 +3,10 @@ module Controller.Physics where
 import Model.Model
 import Model.Basic
 import Model.Platforms
+import Model.Players
+import Model.Enemies
+import Model.Blocks
+import Model.Items
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float

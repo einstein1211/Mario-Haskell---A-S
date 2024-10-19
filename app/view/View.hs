@@ -3,6 +3,10 @@ module View.View where
 import Model.Model
 import Model.Basic
 import Model.Platforms
+import Model.Enemies
+import Model.Players
+import Model.Blocks
+import Model.Items
 import View.Images
 import Graphics.Gloss
 import Data.Bifunctor
@@ -21,7 +25,7 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate)
+viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate) ++ viewBlock (blocks gstate)
 
 --TODO: Implement scale function
 
@@ -66,6 +70,19 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         STAIR   -> stair1
     (HB width height) = hitbox img
     bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+
+viewBlock :: [Block] -> [Picture]
+viewBlock [] = [blank]
+viewBlock (blck:blcks) = bmp : viewBlock blcks
+  where
+    img =
+      case bType blck of
+        BRICK       -> brick1
+        BLOCK       -> undefined
+        EMPTYBLOCK  -> undefined
+        INVISBLOCK  -> undefined
+    HB width height = hitbox img
+    bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
