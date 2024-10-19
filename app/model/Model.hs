@@ -12,7 +12,6 @@ import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 data HasWon     = WON   | LOST      | PLAYING
     deriving(Show,Eq)
 
-
 data GameState = GameState 
     {   lives :: Int
     ,   score :: Int
@@ -35,7 +34,7 @@ initialState = GameState
     ,   players = [mario]
     ,   enemies = [goomba,goomba2]
     ,   items = []
-    ,   blocks = [brick]
+    ,   blocks = [brick,qblock,empblock]
     -- ,   platforms = []
     ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []

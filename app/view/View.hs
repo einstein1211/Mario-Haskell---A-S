@@ -51,10 +51,10 @@ viewEnemy (en:ens) =
       -- FIXME: DA HEK IS GOING ON HERE 
       img = if mod (round (fst (pos (ePhysics en)))) 100 > 50 then goombaWalk1 else goombaWalk2
       bmp
-        | gnd (ePhysics en) == GROUNDED = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ bmp'
+        | gnd (ePhysics en) == GROUNDED = uncurry translate (pos (ePhysics en))$ Scale scaling scaling bmp'
         | otherwise = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ rotate 180 bmp'
       bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
-      (HB width height) = hitbox img
+      HB width height = hitbox img
 
 viewPlatform :: [Platform] -> [Picture]
 viewPlatform [] = [blank]
@@ -68,7 +68,7 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         PIPETR  -> pipe_tr1
         DIRT    -> dirt1
         STAIR   -> stair1
-    (HB width height) = hitbox img
+    HB width height = hitbox img
     bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
 
 viewBlock :: [Block] -> [Picture]
@@ -78,8 +78,8 @@ viewBlock (blck:blcks) = bmp : viewBlock blcks
     img =
       case bType blck of
         BRICK       -> brick1
-        BLOCK       -> undefined
-        EMPTYBLOCK  -> undefined
+        QBLOCK      -> question1f1
+        EMPTYBLOCK  -> emptyblock1
         INVISBLOCK  -> undefined
     HB width height = hitbox img
     bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
