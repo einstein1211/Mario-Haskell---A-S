@@ -2,7 +2,7 @@
 The original Mario Bros made in Haskell
 
 Roadmap to complete game
-- [ ] Platform implementation
+- [x] Platform implementation
 - [ ] Block implementation
 - [ ] Dedicated scaling function
 - [ ] Dynamic scaling to window size
