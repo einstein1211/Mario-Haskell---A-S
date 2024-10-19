@@ -4,6 +4,7 @@ The original Mario Bros made in Haskell
 Roadmap to complete game
 - [x] Platform implementation
 - [ ] Block implementation
+- [ ] Item implementation
 - [ ] Dedicated scaling function
 - [ ] Dynamic scaling to window size
 - [ ] Polished physics engine
