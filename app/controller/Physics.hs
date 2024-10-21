@@ -70,18 +70,19 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt'}
       | not grounded&&right= 100
       | otherwise = 0
     jump
-      | grounded&&jmpt>0 = 4*(-grav)
-      | jmpt>0           = -grav
+      | grounded&&jmpt>0 = (-grav)
+      | jmpt>0           = 0.5*(-grav)
       | otherwise = 0
     phys' = phys {acc = acc',mxv = mv'}
     mv'  = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
-      | otherwise = (ax+movl+movr,ay+jump+grav)
+      | jmpt < 0 = (ax+movl+movr,0)
+      | otherwise = (ax+movl+movr,ay+jump)
     jmpt = pJumpTime pl
     jmpt'
-      | up&&grounded      = 0.5
-      | space&&grounded   = 0.5
+      | up&&grounded      = 0.2
+      | space&&grounded   = 0.2
       | not (up||space)   = 0
       | otherwise         = jmpt
 
