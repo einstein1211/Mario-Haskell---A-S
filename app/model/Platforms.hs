@@ -1,7 +1,7 @@
 module Model.Platforms where
 
 import Model.Basic
-import View.Images (dirt1)
+import View.Images
 
 data PltType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
     deriving (Show,Eq)
