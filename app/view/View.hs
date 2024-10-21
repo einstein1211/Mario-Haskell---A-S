@@ -4,6 +4,7 @@ import Model.Model
 import Model.Basic
 import Model.Player
 import Model.Enemy
+import Model.Block
 import Model.Platform
 import View.Images
 import Graphics.Gloss
@@ -38,7 +39,7 @@ viewPlayer (pl:pls) =
       phys = physics (pType pl)
       img = if gnd phys == GROUNDED then marioStand else marioJump
       bmp = uncurry translate (pos phys)$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      (MkHB width height) = hitbox img
+      MkHB width height = hitbox img
 
 viewEnemy :: [Enemy] -> [Picture]
 viewEnemy [] = [blank]
@@ -55,7 +56,7 @@ viewEnemy (en:ens) =
         | gnd phys == GROUNDED = uncurry translate (pos phys)$ Scale scaling scaling $ bmp'
         | otherwise = uncurry translate (pos phys)$ Scale scaling scaling $ rotate 180 bmp'
       bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      (MkHB width height) = hitbox img
+      MkHB width height = hitbox img
 
 viewPlatform :: [Platform] -> [Picture]
 viewPlatform [] = [blank]
@@ -69,7 +70,7 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         PIPETR  -> pipe_tr1
         DIRT    -> dirt1
         STAIR   -> stair1
-    (MkHB width height) = hitbox img
+    MkHB width height = hitbox img
     bmp = uncurry translate (gridPos (pfPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 viewBlock :: [Block] -> [Picture]
@@ -81,8 +82,8 @@ viewBlock (blck:blcks) = bmp : viewBlock blcks
         BRICK       -> brick1
         QBLOCK      -> question1f1
         EMPTYBLOCK  -> emptyblock1
-        INVISBLOCK  -> undefined
-    HB width height = hitbox img
+        HIDDENBLOCK  -> undefined
+    MkHB width height = hitbox img
     bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 -- viewPure :: GameState -> Picture

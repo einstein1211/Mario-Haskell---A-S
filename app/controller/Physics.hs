@@ -112,21 +112,21 @@ intersects (x1,y1) (MkHB w1 h1) p2 hb2 =
       c3 = (x1+(w1/2),y1-(h1/2))
       c4 = (x1-(w1/2),y1-(h1/2))
 
-blockCheck :: GameState -> Physics -> Physics
-blockCheck g p = foldr blockCheck' p {gnd=AIRBORNE} blks
+blockCheck :: GameState -> Entity -> Entity
+blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
     blks = blocks g
-    blockCheck' ::  Block -> Physics -> Physics
-    blockCheck' blk obj
-      | intersects opos ohb ppos phb = obj'
-      | otherwise = obj
+    blockCheck' ::  Block -> Entity -> Entity
+    blockCheck' blk e@(MkEntity _ obj _)
+      | intersects opos ohb ppos phb = e {physics=obj'}
+      | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
         ppos@(px,py) = gridPos (bPos blk)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
-        ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
-        phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (bHitbox blk)
+        ohb@(MkHB ow oh)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (htb obj)
+        phb@(MkHB pw ph)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (bHitbox blk)
         obj'
           | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
@@ -140,7 +140,7 @@ blockCheck g p = foldr blockCheck' p {gnd=AIRBORNE} blks
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))-2,oy)
 
 platformCheck :: GameState -> Entity -> Entity
-platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e {physics = p {gnd=AIRBORNE}} plats
+platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e plats
   where
     plats = platforms g
     platformCheck' ::  Platform -> Entity -> Entity
