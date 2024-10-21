@@ -8,10 +8,11 @@ type Velocity = (Xvel,Yvel)
 type Xacc = Float
 type Yacc = Float
 type Acceleration = (Xacc,Yacc)
-data GridIndex = GRD Float Float deriving (Show,Eq)
+data GridIndex = MkGrid Float Float deriving (Show,Eq)
 type Width = Float
 type Height = Float
-data Hitbox = HB Width Height deriving (Show,Eq)
+data Hitbox = MkHB Width Height deriving (Show,Eq)
+
 
 data IsGrounded = GROUNDED | AIRBORNE
     deriving (Show,Eq)
@@ -20,14 +21,33 @@ data Direction  = RIGHT | LEFT
 data IsAlive    = ALIVE | DEAD
     deriving(Show,Eq)
 
-data Physics = Physics
+data PlayerType   = MARIO | LUIGI
+    deriving (Show,Eq)
+data EnemyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA
+    deriving (Show,Eq)
+data ItemType    = COIN  | HIDDENCOIN| MUSHROOM | FIREFLOWER | STAR 
+    deriving (Show,Eq)
+data BlockType   = BRICK | QBLOCK     | EMPTYBLOCK | HIDDENBLOCK
+    deriving (Show,Eq)
+data EntityType = MkPlayerType PlayerType | MkEnemyType EnemyType | MkItemType ItemType | MkBlockType BlockType
+    deriving (Show,Eq)
+
+data Physics = MkPhysics
     {   pos :: Point
     ,   vel :: Velocity
     ,   mxv :: Velocity
     ,   acc :: Acceleration
     ,   gnd :: IsGrounded
     ,   htb :: Hitbox
-    } deriving(Show,Eq)
+    ,   dir :: Direction
+    } deriving (Show,Eq)
+
+data Entity = MkEntity
+    {   entity :: EntityType
+    ,   physics :: Physics
+    ,   alive :: IsAlive
+    } deriving (Show,Eq)
+
 
 fps :: Int
 fps = 100
@@ -49,7 +69,7 @@ blksz :: Float
 blksz = 16*scaling
 
 gridPos :: GridIndex -> Point
-gridPos (GRD x y) = translate00 (x*blksz+(blksz/2),-(y * blksz)-(blksz/2))
+gridPos (MkGrid x y) = translate00 (x*blksz+(blksz/2),-(y * blksz)-(blksz/2))
 
 translate00 :: Point -> Point
 translate00 (x,y) = bimap (x -) (y +) uppbound

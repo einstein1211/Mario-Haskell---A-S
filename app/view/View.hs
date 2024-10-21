@@ -2,10 +2,13 @@ module View.View where
 
 import Model.Model
 import Model.Basic
-import Model.Platforms
+import Model.Player
+import Model.Enemy
+import Model.Platform
 import View.Images
 import Graphics.Gloss
 import Data.Bifunctor
+import Model.Basic (EntityType(MkPlayerType, MkBlockType))
 
 viewObject :: Color -> Point -> Path -> Picture
 viewObject c p pt =
@@ -28,44 +31,46 @@ viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies g
 viewPlayer :: [Player] -> [Picture]
 viewPlayer [] = [blank]
 viewPlayer (pl:pls) =
-  case plyType pl of
-    MARIO -> bmp : viewPlayer pls
+  case entity (pType pl) of
+    MkPlayerType MARIO -> bmp : viewPlayer pls
     _     -> [blank]
     where
-      img = if gnd (plyPhysics pl) == GROUNDED then marioStand else marioJump
-      bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
-      (HB width height) = hitbox img
+      phys = physics (pType pl)
+      img = if gnd phys == GROUNDED then marioStand else marioJump
+      bmp = uncurry translate (pos phys)$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+      (MkHB width height) = hitbox img
 
 viewEnemy :: [Enemy] -> [Picture]
 viewEnemy [] = [blank]
 viewEnemy (en:ens) =
-  case eType en of
+  case entity (eType en) of
     -- GOOMBA -> viewObject orange (pos (ePhysics en)) marioPath : viewEnemy ens
-    GOOMBA -> bmp : viewEnemy ens
+    MkEnemyType GOOMBA -> bmp : viewEnemy ens
     _     -> [blank]
     where
       -- FIXME: DA HEK IS GOING ON HERE 
-      img = if mod (round (fst (pos (ePhysics en)))) 100 > 50 then goombaWalk1 else goombaWalk2
+      phys = physics (eType en)
+      img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
       bmp
-        | gnd (ePhysics en) == GROUNDED = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ bmp'
-        | otherwise = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ rotate 180 bmp'
-      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
-      (HB width height) = hitbox img
+        | gnd phys == GROUNDED = uncurry translate (pos phys)$ Scale scaling scaling $ bmp'
+        | otherwise = uncurry translate (pos phys)$ Scale scaling scaling $ rotate 180 bmp'
+      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+      (MkHB width height) = hitbox img
 
 viewPlatform :: [Platform] -> [Picture]
 viewPlatform [] = [blank]
 viewPlatform (plt:plts) = bmp : viewPlatform plts
   where
     img =
-      case pltType plt of
+      case pfType plt of
         PIPEL   -> pipe_l1
         PIPER   -> pipe_r1
         PIPETL  -> pipe_tl1
         PIPETR  -> pipe_tr1
         DIRT    -> dirt1
         STAIR   -> stair1
-    (HB width height) = hitbox img
-    bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+    (MkHB width height) = hitbox img
+    bmp = uncurry translate (gridPos (pfPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of

@@ -2,7 +2,12 @@ module Controller.Physics where
 
 import Model.Model
 import Model.Basic
-import Model.Platforms
+import Model.Player
+import Model.Enemy
+import Model.Block
+import Model.Item
+import Model.Platform
+
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
@@ -14,20 +19,20 @@ fallspd = -3000
 friction :: Float
 friction = 2000
 
-physics :: Float -> GameState -> GameState
-physics secs gstate =
+applyPhysics :: Float -> GameState -> GameState
+applyPhysics secs gstate =
   gstate {
     players = map plf (players gstate),
     enemies = map enf (enemies gstate),
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {plyPhysics = physics' gstate secs (plyPhysics obj), plyJumpTime = plyJumpTime obj - secs}
-    enf obj = obj  {ePhysics   = physics' gstate secs (ePhysics obj)}
-    itf obj = obj  {iPhysics   = physics' gstate secs (iPhysics obj)}
+    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' gstate secs (pType obj), pJumpTime = pJumpTime obj - secs}
+    enf obj = obj  {eType = applyPhysics' gstate secs (eType obj)}
+    itf obj = obj  {iType = applyPhysics' gstate secs (iType obj)}
 
-physics' :: GameState -> Float -> Physics -> Physics
-physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
+applyPhysics' :: GameState -> Float -> Entity -> Entity
+applyPhysics' g s e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel = (vx',vy')}}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -42,9 +47,10 @@ physics' g s p = checks p {pos = (x',y'), vel = (vx',vy')}
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g k
 
 playerPhysics :: GameState -> Player -> Player
-playerPhysics g pl = 
-  pl {plyPhysics = phys',plyJumpTime = jmpt'}
+playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt'}
   where
+    typ = pType pl
+    typ' = typ {physics = phys'}
     keys  = pressedKeys g
     space = KeySpace `elem` keys
     up    = KeyUp `elem` keys
@@ -52,17 +58,17 @@ playerPhysics g pl =
     left  = KeyLeft `elem` keys
     right = KeyRight `elem` keys
     shft = KeyShiftL `elem` keys
-    none = not(space||up||left||right)
-    phys  = plyPhysics pl
+    none = not (space||up||left||right)
+    phys  = physics typ
     grounded = gnd phys == GROUNDED
     (ax,ay) = acc phys
     movl
       | grounded&&left = -300
-      | (not grounded)&&left= -100
+      | not grounded&&left= -100
       | otherwise = 0
     movr
       | grounded&&right = 300
-      | (not grounded)&&right= 100
+      | not grounded&&right= 100
       | otherwise = 0
     jump
       | grounded&&jmpt>0 = 4*(-grav)
@@ -73,15 +79,15 @@ playerPhysics g pl =
     acc'
       | none = (0,0)
       | otherwise = (ax+movl+movr,ay+jump+grav)
-    jmpt = plyJumpTime pl
+    jmpt = pJumpTime pl
     jmpt'
       | up&&grounded      = 0.5
       | space&&grounded   = 0.5
-      | not(up||space)    = 0
+      | not (up||space)    = 0
       | otherwise         = jmpt
 
-maxSpdCheck :: Physics -> Physics
-maxSpdCheck p = p {vel = (vx',vy')}
+maxSpdCheck :: Entity -> Entity
+maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
   where
     (vx,vy)   = vel p
     (mvx,mvy) = mxv p
@@ -93,13 +99,13 @@ maxSpdCheck p = p {vel = (vx',vy')}
         | otherwise = vy
 
 inHitbox :: Point -> Point -> Hitbox -> Bool
-inHitbox (x1,y1) (x2,y2) (HB w h) = x1>lp && y1>bp && x1<rp && y1<tp
+inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
     (lp,rp) = (x2-(w/2)+2,x2+(w/2)-2)
     (bp,tp) = (y2-(h/2),y2+(h/2)+1)
 
 intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
-intersects (x1,y1) (HB w1 h1) p2 hb2 =
+intersects (x1,y1) (MkHB w1 h1) p2 hb2 =
   inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2
     where
       c1 = (x1+(w1/2),y1+(h1/2))
@@ -107,41 +113,41 @@ intersects (x1,y1) (HB w1 h1) p2 hb2 =
       c3 = (x1+(w1/2),y1-(h1/2))
       c4 = (x1-(w1/2),y1-(h1/2))
 
-platformCheck :: GameState -> Physics -> Physics
-platformCheck g p = foldr platformCheck' p {gnd=AIRBORNE} plats
+platformCheck :: GameState -> Entity -> Entity
+platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e {physics = p {gnd=AIRBORNE}} plats
   where
     plats = platforms g
-    platformCheck' ::  Platform -> Physics -> Physics
-    platformCheck' plt obj
-      | intersects opos ohb ppos phb = obj'
-      | otherwise = obj 
+    platformCheck' ::  Platform -> Entity -> Entity
+    platformCheck' plt e@(MkEntity _ obj _)
+      | intersects opos ohb ppos phb = e {physics=obj'}
+      | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pltPos plt)
+        ppos@(px,py) = gridPos (pfPos plt)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
-        ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
-        phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (pltHitbox plt)
+        ohb@(MkHB ow oh)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (htb obj)
+        phb@(MkHB pw ph)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (pfHitbox plt)
         obj'
-          | abs(ox-px)>abs(oy-py) = sides
+          | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
           | otherwise             = obj {gnd = GROUNDED, pos = yup}
-        sides 
+        sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
-          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)} 
-        yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
-        ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
-        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
-        xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
+          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
+        yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py)))
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy)))
+        xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))+2,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs (ox-px))-2,oy)
 
-collisionCheck :: Physics -> Physics --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck p = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}
+collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
+collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
     (ax,ay) = acc p
     g       = gnd p
-    w = (\(HB c d) -> c*scaling) (htb p)
+    w = (\(MkHB c d) -> c*scaling) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
     (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
     x'

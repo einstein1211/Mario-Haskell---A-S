@@ -12,7 +12,7 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   -- print (players gstate)
-  return $ physics secs gstate {time = time gstate + secs}
+  return $ applyPhysics secs gstate {time = time gstate + secs}
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
