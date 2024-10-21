@@ -82,7 +82,7 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt'}
     jmpt'
       | up&&grounded      = 0.5
       | space&&grounded   = 0.5
-      | not (up||space)    = 0
+      | not (up||space)   = 0
       | otherwise         = jmpt
 
 maxSpdCheck :: Entity -> Entity
