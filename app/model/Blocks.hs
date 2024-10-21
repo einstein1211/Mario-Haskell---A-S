@@ -9,6 +9,7 @@ data BlckType   = BRICK | QBLOCK     | EMPTYBLOCK | INVISBLOCK
 
 blockhb :: Hitbox
 blockhb = HB 16 16
+
 data Block = Block
     {   bType :: BlckType
     ,   bHitbox :: Hitbox

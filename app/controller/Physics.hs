@@ -10,7 +10,7 @@ import Model.Platform
 import Graphics.Gloss.Interface.IO.Game
 
 grav :: Float
-grav = -2000.0
+grav = -2000
 
 fallspd :: Float
 fallspd = -3000
@@ -119,7 +119,7 @@ blockCheck g p = foldr blockCheck' p {gnd=AIRBORNE} blks
     blockCheck' ::  Block -> Physics -> Physics
     blockCheck' blk obj
       | intersects opos ohb ppos phb = obj'
-      | otherwise = obj 
+      | otherwise = obj
       where
         opos@(ox,oy) = pos obj
         ppos@(px,py) = gridPos (bPos blk)
@@ -128,16 +128,16 @@ blockCheck g p = foldr blockCheck' p {gnd=AIRBORNE} blks
         ohb@(HB ow oh)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (htb obj)
         phb@(HB pw ph)  = (\(HB c d) -> HB (c*scaling) (d*scaling)) (bHitbox blk)
         obj'
-          | abs(ox-px)>abs(oy-py) = sides
+          | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
           | otherwise             = obj {gnd = GROUNDED, pos = yup}
-        sides 
+        sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
-          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)} 
-        yup = (ox,oy+((oh/2)+(ph/2)-abs(oy-py)))
-        ydown = (ox,oy-((oh/2)+(ph/2)-abs(py-oy)))
-        xleft = (ox-((ow/2)+(pw/2)-abs(ox-px))+2,oy)
-        xright= (ox+((ow/2)+(pw/2)-abs(ox-px))-2,oy)
+          | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
+        yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py)))
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy)))
+        xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))+2,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs (ox-px))-2,oy)
 
 platformCheck :: GameState -> Entity -> Entity
 platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e {physics = p {gnd=AIRBORNE}} plats
