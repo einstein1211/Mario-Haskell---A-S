@@ -37,7 +37,7 @@ viewPlayer (pl:pls) =
     _     -> [blank]
     where
       img = if gnd (plyPhysics pl) == GROUNDED then marioStand else marioJump
-      bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+      bmp = uncurry translate (pos (plyPhysics pl))$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       (HB width height) = hitbox img
 
 viewEnemy :: [Enemy] -> [Picture]
@@ -53,7 +53,7 @@ viewEnemy (en:ens) =
       bmp
         | gnd (ePhysics en) == GROUNDED = uncurry translate (pos (ePhysics en))$ Scale scaling scaling bmp'
         | otherwise = uncurry translate (pos (ePhysics en))$ Scale scaling scaling $ rotate 180 bmp'
-      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       HB width height = hitbox img
 
 viewPlatform :: [Platform] -> [Picture]
@@ -69,7 +69,7 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
         DIRT    -> dirt1
         STAIR   -> stair1
     HB width height = hitbox img
-    bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+    bmp = uncurry translate (gridPos (pltPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 viewBlock :: [Block] -> [Picture]
 viewBlock [] = [blank]
@@ -82,7 +82,7 @@ viewBlock (blck:blcks) = bmp : viewBlock blcks
         EMPTYBLOCK  -> emptyblock1
         INVISBLOCK  -> undefined
     HB width height = hitbox img
-    bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) True
+    bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
