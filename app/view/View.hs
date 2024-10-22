@@ -112,7 +112,6 @@ viewItem (it:its) =
 
     -- Send help.
 
-
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
 viewPlatform g (plt:plts) = bmp : viewPlatform g plts
