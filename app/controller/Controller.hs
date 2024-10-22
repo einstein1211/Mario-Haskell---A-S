@@ -27,11 +27,12 @@ input e gstate = return (inputKey e gstate)
 -- input _ = return
 
 inputKey :: Event -> GameState -> GameState
-inputKey e@(EventKey (SpecialKey key) _ _ _) gstate
+inputKey e@(EventKey (SpecialKey key) state _ _) gstate
   | dkey = playerMove e gstate
   | otherwise =
     case key of
       KeyEsc   -> undefined--exitSuccess
+      KeyCtrlL -> if state == Down then gstate {debugMode = not (debugMode gstate)} else gstate
       _ -> error ":("
       where
         dkey = key `elem` directKey

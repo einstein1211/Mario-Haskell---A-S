@@ -60,7 +60,7 @@ playerVsEnemy e p = newp
     ephys           = physics (eType e)
     ent             = pType p
     p' 
-      | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {vel = (vx,500),gnd = GROUNDED}}}
+      | abs (px-ex) < abs (py-ey) && (py > ey) = p {pType = ent {physics = pphys {vel = (vx,500),gnd = GROUNDED}}}
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = damage
     -- yup = (px,py+((ph/2)+(eh/2)-abs (py-ey)))
@@ -106,7 +106,7 @@ blockVsPlayer p b = newb
     bhb@(MkHB _ bh) = pfHitbox pf
     pf              = bPlatform b
     b' 
-      | abs (px-bx) < abs (py-by) && (py < by) = hit
+      | abs (px-bx) < abs (py-by) && (py < by) && vy > 0 = hit
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =

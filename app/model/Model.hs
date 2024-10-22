@@ -22,6 +22,7 @@ data GameState = MkGameState
     ,   blocks :: [Block]
     ,   platforms :: [Platform]
     ,   pressedKeys :: [SpecialKey]
+    ,   debugMode :: Bool
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -33,8 +34,9 @@ initialState = MkGameState
     ,   players = [mario]
     ,   enemies = [goomba,goomba2]
     ,   items = []
-    ,   blocks = [brick,qblock,empblock]
+    ,   blocks = [brick,qblock,empblock,hidblock]
     -- ,   platforms = []
     ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
+    ,   debugMode = False
     }

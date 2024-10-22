@@ -25,31 +25,37 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate) ++ viewBlock (blocks gstate)
+viewPure g = pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+  where
+    debug
+      | debugMode g = color green $ scale 0.3 0.3 $ translate (-300) 300 (text "Debug Mode")
+      | otherwise = blank
 
 --TODO: Implement scale function
 
-viewPlayer :: [Player] -> [Picture]
-viewPlayer [] = [blank]
-viewPlayer (pl:pls) =
+viewPlayer :: GameState -> [Player] -> [Picture]
+viewPlayer _ [] = [blank]
+viewPlayer g (pl:pls) =
   case entity (pType pl) of
-    MkPlayerType MARIO -> bmp : hbox : viewPlayer pls
+    MkPlayerType MARIO -> bmp : hbox : viewPlayer g pls
     _     -> [blank]
     where
       phys = physics (pType pl)
       img = if gnd phys == GROUNDED then marioStand else marioJump
       bmp = uncurry translate (pos phys)$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       MkHB width height = hitbox img
-      hbox = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+      hbox 
+        | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+        | otherwise   = blank
       (x,y) = pos phys
       (w,h) = (width*scaling,height*scaling)
 
-viewEnemy :: [Enemy] -> [Picture]
-viewEnemy [] = [blank]
-viewEnemy (en:ens) =
+viewEnemy :: GameState -> [Enemy] -> [Picture]
+viewEnemy _ [] = [blank]
+viewEnemy g (en:ens) =
   case entity (eType en) of
     -- GOOMBA -> viewObject orange (pos (ePhysics en)) marioPath : viewEnemy ens
-    MkEnemyType GOOMBA -> bmp : hbox : viewEnemy ens
+    MkEnemyType GOOMBA -> bmp : hbox : viewEnemy g ens
     _     -> [blank]
     where
       -- FIXME: DA HEK IS GOING ON HERE 
@@ -60,13 +66,15 @@ viewEnemy (en:ens) =
         | otherwise = uncurry translate (pos phys)$ Scale scaling scaling $ rotate 180 bmp'
       bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       MkHB width height = hitbox img
-      hbox = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+      hbox
+        | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+        | otherwise   = blank
       (x,y) = pos phys
       (w,h) = (width*scaling,height*scaling)
 
-viewPlatform :: [Platform] -> [Picture]
-viewPlatform [] = [blank]
-viewPlatform (plt:plts) = bmp : viewPlatform plts
+viewPlatform :: GameState -> [Platform] -> [Picture]
+viewPlatform _ [] = [blank]
+viewPlatform g (plt:plts) = bmp : viewPlatform g plts
   where
     img =
       case pfType plt of
@@ -80,19 +88,20 @@ viewPlatform (plt:plts) = bmp : viewPlatform plts
     MkHB width height = hitbox img
     bmp | img /= noimg = uncurry translate (gridPos (pfPos plt)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
         | otherwise = blank
-viewBlock :: [Block] -> [Picture]
-viewBlock [] = [blank]
-viewBlock (blck:blcks) = bmp : viewBlock blcks
+
+viewBlock :: GameState -> [Block] -> [Picture]
+viewBlock _ [] = [blank]
+viewBlock g (blck:blcks) = bmp : viewBlock g blcks
   where
     img =
       case bType blck of
         BRICK       -> brick1
         QBLOCK      -> question1f1
         EMPTYBLOCK  -> emptyblock1
-        HIDDENBLOCK  -> undefined
+        HIDDENBLOCK -> noimg
     MkHB width height = hitbox img
-    bmp = uncurry translate (gridPos (pfPos (bPlatform blck))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-
+    bmp | img /= noimg = uncurry translate (gridPos (pfPos (bPlatform blck))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+        | otherwise = blank
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of
 --   ShowNothing   -> blank

@@ -46,3 +46,11 @@ empblock = MkBlock
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
+
+hidblock :: Block
+hidblock = MkBlock
+    {   bType = HIDDENBLOCK
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 5 6}
+    ,   bAlive = ALIVE
+    ,   bContents = NOITEM
+    }

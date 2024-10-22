@@ -108,7 +108,7 @@ inHitbox :: Point -> Point -> Hitbox -> Bool
 inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
     (lp,rp) = (x2-(w/2),x2+(w/2))
-    (bp,tp) = (y2-(h/2),y2+(h/2))
+    (bp,tp) = (y2-(h/2),y2+(h/2)+1)
 
 -- class InHitbox a where
 --     inHitbox :: a -> a -> Bool
@@ -128,22 +128,24 @@ intersects (x1,y1) (MkHB w1 h1) p2 hb2 =
 blockCheck :: GameState -> Entity -> Entity
 blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
-    blks = map bPlatform (blocks g)
-    blockCheck' ::  Platform -> Entity -> Entity
-    blockCheck' blk e@(MkEntity _ obj _)
+    blks = blocks g
+    blockCheck' :: Block -> Entity -> Entity
+    blockCheck' (MkBlock typ plt _ _) (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos blk)
+        ppos@(px,py) = gridPos (pfPos plt)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
-        phb@(MkHB pw ph) = pfHitbox blk
+        phb@(MkHB pw ph) = pfHitbox plt
+        hidden = typ == HIDDENBLOCK
         obj'
+          | hidden                  = obj
           | abs (ox-px)>abs (oy-py) = sides
-          | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
-          | otherwise             = obj {gnd = GROUNDED, pos = yup}
+          | oy < py && vy > 0       = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
+          | otherwise               = obj {gnd = GROUNDED, pos = yup}
         sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
           | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
