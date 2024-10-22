@@ -8,17 +8,6 @@ import Model.Block
 import Model.Platform
 import Model.Item
 import View.Images
-    ( Image(bytestring, hitbox),
-      marioStand,
-      marioJump,
-      goombaWalk1,
-      goombaWalk2,
-      dirt1,
-      stair1,
-      pipe_tl1,
-      pipe_tr1,
-      pipe_l1,
-      pipe_r1 )
 import Graphics.Gloss
     ( blank,
       color,
@@ -36,6 +25,7 @@ import Graphics.Gloss
       RowOrder(BottomToTop) )
 import Data.Bifunctor ( Bifunctor(bimap) )
 import Model.Basic (EntityType(MkPlayerType, MkBlockType))
+import Graphics.Gloss
 
 viewObject :: Color -> Point -> Path -> Picture
 viewObject c p pt =
