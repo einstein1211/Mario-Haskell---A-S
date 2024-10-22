@@ -5,9 +5,35 @@ import Model.Basic
 import Model.Player
 import Model.Enemy
 import Model.Platform
+import Model.Item
 import View.Images
+    ( Image(bytestring, hitbox),
+      marioStand,
+      marioJump,
+      goombaWalk1,
+      goombaWalk2,
+      dirt1,
+      stair1,
+      pipe_tl1,
+      pipe_tr1,
+      pipe_l1,
+      pipe_r1 )
 import Graphics.Gloss
-import Data.Bifunctor
+    ( blank,
+      color,
+      pictures,
+      polygon,
+      rotate,
+      translate,
+      bitmapDataOfByteString,
+      Color,
+      Path,
+      Picture(Bitmap, Scale),
+      Point,
+      BitmapFormat(BitmapFormat),
+      PixelFormat(PxRGBA),
+      RowOrder(BottomToTop) )
+import Data.Bifunctor ( Bifunctor(bimap) )
 import Model.Basic (EntityType(MkPlayerType, MkBlockType))
 
 viewObject :: Color -> Point -> Path -> Picture
@@ -24,7 +50,7 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate)
+viewPure gstate = pictures $ viewPlayer (players gstate) ++ viewEnemy (enemies gstate) ++ viewPlatform (platforms gstate) ++ viewItem (items gstate)
 
 --TODO: Implement scale function
 
@@ -56,6 +82,21 @@ viewEnemy (en:ens) =
         | otherwise = uncurry translate (pos phys)$ Scale scaling scaling $ rotate 180 bmp'
       bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       (MkHB width height) = hitbox img
+
+viewItem :: [Item] -> [Picture]
+viewItem [] = [blank]
+viewItem (it:its) =
+  case entity (iType it) of
+    MkItemType COIN -> bmp : viewItem its   
+    _    -> [blank]         
+  where
+    phys = physics (iType it) 
+    img = goombaWalk1 --wont recognize coinSprite within scope even if import is edited >:@
+    bmp = uncurry translate (pos phys) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    (MkHB width height) = hitbox img
+
+    -- Send help.
+
 
 viewPlatform :: [Platform] -> [Picture]
 viewPlatform [] = [blank]
