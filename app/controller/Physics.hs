@@ -80,15 +80,15 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
     mv' = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
-      | jmpt < 0 = (ax+movl+movr,0)
-      | otherwise = (ax+movl+movr,ay+jump)
+      | jmpt > 0 = (ax+movl+movr,ay+jump)
+      | otherwise = (ax+movl+movr,0)
     jmpt = pJumpTime pl
     jmpt'
       | up&&grounded      = 0.2
       | space&&grounded   = 0.2
       | not (up||space)   = 0
       | otherwise         = jmpt
-    movement 
+    movement
       | down = CROUCHED
       | otherwise = pMovement pl
 
@@ -109,6 +109,7 @@ inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
     (lp,rp) = (x2-(w/2),x2+(w/2))
     (bp,tp) = (y2-(h/2),y2+(h/2)+1)
+--BUG: not bouncing off underside of blocks
 
 -- class InHitbox a where
 --     inHitbox :: a -> a -> Bool
@@ -144,7 +145,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
         obj'
           | hidden                  = obj
           | abs (ox-px)>abs (oy-py) = sides
-          | oy < py && vy > 0       = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
+          | oy < py                 = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
           | otherwise               = obj {gnd = GROUNDED, pos = yup}
         sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
@@ -167,8 +168,8 @@ platformCheck g e = foldr platformCheck' e plats
         ppos@(px,py) = gridPos (pfPos plt)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
-        ohb@(MkHB ow oh) = (htb obj)
-        phb@(MkHB pw ph) = (pfHitbox plt)
+        ohb@(MkHB ow oh) = htb obj
+        phb@(MkHB pw ph) = pfHitbox plt
         obj'
           | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
@@ -176,7 +177,7 @@ platformCheck g e = foldr platformCheck' e plats
         sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
           | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
-        yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py))-1)
+        yup   = (ox,oy+((oh/2)+(ph/2)-abs (oy-py))-1)
         ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy))+1)
         xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))-1,oy)
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)

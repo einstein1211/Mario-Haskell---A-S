@@ -14,7 +14,7 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   -- print (players gstate)
-  putStr $ "\r"++ show (map pMovement (players gstate))
+  -- print (map pMovement (players gstate))
   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
 
 -- | Handle user input
