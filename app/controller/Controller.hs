@@ -2,17 +2,18 @@ module Controller.Controller where
 
 import Model.Model
 import Controller.Physics
+import Controller.Entity
 import Graphics.Gloss.Interface.IO.Game
 
-import System.Exit
+-- import System.Exit
 
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
-  -- print (players gstate)
-  return $ applyPhysics secs gstate {time = time gstate + secs}
+  print (players gstate)
+  return $ entityInteractions secs $ applyPhysics secs gstate {time = time gstate + secs}
 
 -- | Handle user input
 input :: Event -> GameState -> IO GameState

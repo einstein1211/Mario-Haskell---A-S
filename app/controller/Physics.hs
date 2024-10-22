@@ -26,12 +26,12 @@ applyPhysics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' gstate secs (pType obj), pJumpTime = pJumpTime obj - secs}
-    enf obj = obj  {eType = applyPhysics' gstate secs (eType obj)}
-    itf obj = obj  {iType = applyPhysics' gstate secs (iType obj)}
+    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate(pType obj), pJumpTime = pJumpTime obj - secs}
+    enf obj = obj  {eType = applyPhysics' secs gstate (eType obj)}
+    itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
-applyPhysics' :: GameState -> Float -> Entity -> Entity
-applyPhysics' g s e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel = (vx',vy')}}
+applyPhysics' :: Float -> GameState -> Entity -> Entity
+applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel = (vx',vy')}}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -39,7 +39,10 @@ applyPhysics' g s e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     grounded = gnd p == GROUNDED
     x'  = x   + vx*s
     y'  = y   + vy*s
-    vx' = vx  + ax*s
+    vx' --BUG: Makes you get stuck on walls 
+      | grounded && vx>0 = vx + (ax-friction)*s
+      | grounded && vx<0 = vx + (ax+friction)*s
+      | otherwise        = vx + ax*s
     vy'
       | grounded && vy<0  = 0
       | otherwise         = vy + (ay+grav)*s
@@ -62,19 +65,19 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt'}
     grounded = gnd phys == GROUNDED
     (ax,ay) = acc phys
     movl
-      | grounded&&left = -300
-      | not grounded&&left= -100
-      | otherwise = 0
+      | grounded&&left     = -300
+      | not grounded&&left = -100
+      | otherwise          = 0
     movr
-      | grounded&&right = 300
-      | not grounded&&right= 100
-      | otherwise = 0
+      | grounded&&right     = 300
+      | not grounded&&right = 100
+      | otherwise           = 0
     jump
-      | grounded&&jmpt>0 = (-grav)
-      | jmpt>0           = 0.5*(-grav)
-      | otherwise = 0
+      | grounded&&jmpt>0     = (-grav)
+      | not grounded&&jmpt>0 = 0.5*(-grav)
+      | otherwise            = 0
     phys' = phys {acc = acc',mxv = mv'}
-    mv'  = if shft then (700,800) else (300,800)
+    mv' = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
       | jmpt < 0 = (ax+movl+movr,0)
@@ -101,7 +104,7 @@ maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
 inHitbox :: Point -> Point -> Hitbox -> Bool
 inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
-    (lp,rp) = (x2-(w/2)+2,x2+(w/2)-2)
+    (lp,rp) = (x2-(w/2)+3,x2+(w/2)-3)
     (bp,tp) = (y2-(h/2),y2+(h/2)+1)
 
 intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
@@ -116,18 +119,18 @@ intersects (x1,y1) (MkHB w1 h1) p2 hb2 =
 blockCheck :: GameState -> Entity -> Entity
 blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
-    blks = blocks g
-    blockCheck' ::  Block -> Entity -> Entity
+    blks = map bPlatform (blocks g)
+    blockCheck' ::  Platform -> Entity -> Entity
     blockCheck' blk e@(MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (bPos blk)
+        ppos@(px,py) = gridPos (pfPos blk)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (htb obj)
-        phb@(MkHB pw ph)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (bHitbox blk)
+        phb@(MkHB pw ph)  = (\(MkHB c d) -> MkHB (c*scaling) (d*scaling)) (pfHitbox blk)
         obj'
           | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
@@ -137,15 +140,15 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
           | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
         yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py)))
         ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy)))
-        xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))+2,oy)
-        xright= (ox+((ow/2)+(pw/2)-abs (ox-px))-2,oy)
+        xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))+3,oy)
+        xright= (ox+((ow/2)+(pw/2)-abs (ox-px))-3,oy)
 
 platformCheck :: GameState -> Entity -> Entity
-platformCheck g e@(MkEntity _ p _) = foldr platformCheck' e plats
+platformCheck g e = foldr platformCheck' e plats
   where
     plats = platforms g
     platformCheck' ::  Platform -> Entity -> Entity
-    platformCheck' plt e@(MkEntity _ obj _)
+    platformCheck' plt (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where

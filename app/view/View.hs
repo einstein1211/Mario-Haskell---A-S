@@ -84,7 +84,7 @@ viewBlock (blck:blcks) = bmp : viewBlock blcks
         EMPTYBLOCK  -> emptyblock1
         HIDDENBLOCK  -> undefined
     MkHB width height = hitbox img
-    bmp = uncurry translate (gridPos (bPos blck)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp = uncurry translate (gridPos (pfPos (bPlatform blck))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
 
 -- viewPure :: GameState -> Picture
 -- viewPure gstate = case infoToShow gstate of

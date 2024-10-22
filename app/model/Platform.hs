@@ -3,7 +3,7 @@ module Model.Platform where
 import Model.Basic
 import View.Images (dirt1)
 
-data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
+data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
     deriving (Show,Eq)
 
 data Platform = MkPlatform

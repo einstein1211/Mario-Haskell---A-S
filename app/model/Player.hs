@@ -1,7 +1,6 @@
 module Model.Player where
 
 import Model.Basic
-import Model.Basic (Physics(MkPhysics))
 
 data Movement   = NORMAL| RUNNING   | CROUCHED
     deriving (Show,Eq)
@@ -23,6 +22,7 @@ mario = MkPlayer
     ,   pMovement = NORMAL
     ,   pPower = SMALL
     ,   pJumpTime = 0
+    ,   pLives = 3
     }
 
 initPhysics :: Physics

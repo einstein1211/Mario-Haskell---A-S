@@ -2,6 +2,7 @@ module Model.Block where
 
 import Model.Basic
 import Model.Item
+import Model.Platform
 
 blockhb :: Hitbox
 blockhb = MkHB 16 16
@@ -14,8 +15,7 @@ blockhb = MkHB 16 16
 
 data Block = MkBlock
     {   bType :: BlockType
-    ,   bHitbox :: Hitbox
-    ,   bPos :: GridIndex
+    ,   bPlatform :: Platform
     ,   bAlive :: IsAlive
     ,   bContents :: Item
     } deriving (Show,Eq)
@@ -23,8 +23,7 @@ data Block = MkBlock
 brick :: Block
 brick = MkBlock
     {   bType = BRICK
-    ,   bHitbox = blockhb
-    ,   bPos = MkGrid 2 2
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 2 6}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
@@ -32,8 +31,7 @@ brick = MkBlock
 qblock :: Block
 qblock = MkBlock
     {   bType = QBLOCK
-    ,   bHitbox = blockhb
-    ,   bPos = MkGrid 3 2
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 3 6}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
@@ -41,8 +39,7 @@ qblock = MkBlock
 empblock :: Block
 empblock = MkBlock
     {   bType = EMPTYBLOCK
-    ,   bHitbox = blockhb
-    ,   bPos = MkGrid 4 2
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 4 6}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
