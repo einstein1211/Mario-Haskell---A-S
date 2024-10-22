@@ -105,8 +105,10 @@ blockVsPlayer p b = newb
     bpos@(bx,by)    = gridPos $ pfPos pf
     bhb@(MkHB _ bh) = pfHitbox pf
     pf              = bPlatform b
+    hidden = bType b == HIDDENBLOCK
     b' 
-      | abs (px-bx) < abs (py-by) && (py < by) && vy > 0 = hit
+      | abs (px-bx) < abs (py-by) && (py < by) && hidden && vy > 0 = hit
+      | abs (px-bx) < abs (py-by) && (py < by) && not hidden= hit
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =
