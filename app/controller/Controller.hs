@@ -14,7 +14,7 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
   -- print (players gstate)
-  print (map pMovement (players gstate))
+  putStr $ "\r"++ show (map pMovement (players gstate))
   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
 
 -- | Handle user input
@@ -38,7 +38,7 @@ inputKey e@(EventKey (SpecialKey key) _ _ _) gstate
 inputKey _ gstate = gstate -- Otherwise keep the same
 
 playerMove :: Event -> GameState -> GameState
-playerMove (EventKey (SpecialKey key) state _ _) g 
+playerMove (EventKey (SpecialKey key) state _ _) g
   | state == Down = g {pressedKeys = key:pks}
   | otherwise     = g {pressedKeys = filter (/=key) pks}
     where

@@ -6,6 +6,7 @@ import Model.Enemy
 import Model.Item
 import Model.Block
 import Model.Model
+import Model.Platform
 import Controller.Physics
 
 entityUpdate :: GameState -> GameState
@@ -41,7 +42,7 @@ entityInteractions s g =
         pvi p = p
         evp e = foldr enemyVsPlayer e (players g)
         ivp i = i
-        bvp b = b
+        bvp b = foldr blockVsPlayer b (players g)
 
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
@@ -84,8 +85,33 @@ enemyVsPlayer p e = newe
     ephys           = physics ent
     ent             = eType e
     e' 
-      | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = e {eType = ent {alive = DEAD}}
+      | abs (px-ex) < abs (py-ey) && (py > ey) = e {eType = ent {alive = DEAD}}
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
 -- entityInteract :: Entity -> Entity -> Entity
 -- entityInteract
+
+blockVsPlayer :: Player -> Block -> Block
+blockVsPlayer p b = newb
+  where
+    newb
+      | intersects ppos phb bpos bhb = b'
+      | otherwise                    = b
+    ppos@(px,py)    = pos pphys
+    phb@(MkHB _ ph) = htb pphys
+    pphys           = physics (pType p)
+    (ax,ay)         = acc pphys
+    (vx,vy)         = vel pphys
+    bpos@(bx,by)    = gridPos $ pfPos pf
+    bhb@(MkHB _ bh) = pfHitbox pf
+    pf              = bPlatform b
+    b' 
+      | abs (px-bx) < abs (py-by) && (py < by) = hit
+      -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
+      | otherwise = b
+    hit =
+      case bType b of
+        BRICK       -> b {bAlive = DEAD}
+        QBLOCK      -> b {bType = EMPTYBLOCK}
+        EMPTYBLOCK  -> b
+        HIDDENBLOCK -> b {bType = EMPTYBLOCK}

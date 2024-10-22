@@ -108,7 +108,7 @@ inHitbox :: Point -> Point -> Hitbox -> Bool
 inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
   where
     (lp,rp) = (x2-(w/2),x2+(w/2))
-    (bp,tp) = (y2-(h/2),y2+(h/2)+1)
+    (bp,tp) = (y2-(h/2),y2+(h/2))
 
 -- class InHitbox a where
 --     inHitbox :: a -> a -> Bool
@@ -147,8 +147,8 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
         sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
           | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
-        yup   = (ox,oy+((oh/2)+(ph/2)-abs (oy-py)))
-        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy)))
+        yup   = (ox,oy+((oh/2)+(ph/2)-abs (oy-py))-1)
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy))+1)
         xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))-1,oy)
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
@@ -174,8 +174,8 @@ platformCheck g e = foldr platformCheck' e plats
         sides
           | ox < px = obj   {pos = xleft, vel = (0,vy), acc = (0,ay)}
           | otherwise = obj {pos = xright, vel = (0,vy), acc = (0,ay)}
-        yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py)))
-        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy)))
+        yup = (ox,oy+((oh/2)+(ph/2)-abs (oy-py))-1)
+        ydown = (ox,oy-((oh/2)+(ph/2)-abs (py-oy))+1)
         xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))-1,oy)
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
