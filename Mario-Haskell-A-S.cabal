@@ -71,6 +71,7 @@ executable Mario-Haskell-A-S
                         Model.Platform
                         Controller.Controller
                         Controller.Physics
+                        Controller.Entity
                         View.View
                         View.Images
 

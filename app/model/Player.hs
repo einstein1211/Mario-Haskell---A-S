@@ -1,12 +1,14 @@
 module Model.Player where
 
 import Model.Basic
-import Model.Basic (Physics(MkPhysics))
 
-data Movement   = NORMAL| RUNNING   | CROUCHED
+data Movement   = STANDING | RUNNING | CROUCHED | JUMPING
     deriving (Show,Eq)
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)
+
+instance IsAlive Player where 
+  isAlive p = alive (pType p) == ALIVE 
 
 -- | Data describing players in Game 
 data Player = MkPlayer
@@ -20,9 +22,10 @@ data Player = MkPlayer
 mario :: Player
 mario = MkPlayer
     {   pType = MkEntity {entity = MkPlayerType MARIO, physics = initPhysics, alive = ALIVE}
-    ,   pMovement = NORMAL
+    ,   pMovement = STANDING
     ,   pPower = SMALL
     ,   pJumpTime = 0
+    ,   pLives = 3
     }
 
 initPhysics :: Physics
@@ -32,6 +35,6 @@ initPhysics = MkPhysics
     ,   mxv = (500,500)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB 12 16
+    ,   htb = MkHB (12*scaling) (16*scaling)
     ,   dir = RIGHT
     }

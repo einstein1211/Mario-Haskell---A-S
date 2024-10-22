@@ -1,9 +1,8 @@
 module Model.Platform where
 
 import Model.Basic
-import View.Images (dirt1)
 
-data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR
+data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
     deriving (Show,Eq)
 
 data Platform = MkPlatform
@@ -13,7 +12,7 @@ data Platform = MkPlatform
     } deriving (Show,Eq)
 
 platformHB :: Hitbox
-platformHB = MkHB 17 16
+platformHB = MkHB (16*scaling) (16*scaling)
 
 makeFloor :: [Platform]
 makeFloor = makeFloor' 15
