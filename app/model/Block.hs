@@ -5,7 +5,10 @@ import Model.Item
 import Model.Platform
 
 blockhb :: Hitbox
-blockhb = MkHB 16 16
+blockhb = MkHB (16*scaling) (16*scaling)
+
+instance IsAlive Block where
+    isAlive b = bAlive b == ALIVE
 
 -- data Block = MkBlock
 --     {   bType :: Entity
@@ -16,7 +19,7 @@ blockhb = MkHB 16 16
 data Block = MkBlock
     {   bType :: BlockType
     ,   bPlatform :: Platform
-    ,   bAlive :: IsAlive
+    ,   bAlive :: Alive
     ,   bContents :: Item
     } deriving (Show,Eq)
 

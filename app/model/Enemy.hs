@@ -5,6 +5,9 @@ import Model.Basic
 data EnemyAI = EASY | MEDIUM | HARD
     deriving (Show,Eq)
 
+instance IsAlive Enemy where
+    isAlive e = alive (eType e) == ALIVE
+
 -- | Data describing enemies in Game 
 data Enemy = MkEnemy
     {   eType :: Entity
@@ -25,22 +28,22 @@ goomba2 = MkEnemy
 
 initPhysics2 :: Physics
 initPhysics2 = MkPhysics
-    {   pos = (0.0,0.0)
+    {   pos = (300.0,0.0)
     ,   vel = (200.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB 14 16    
+    ,   htb = MkHB (14*scaling) (16*scaling)    
     ,   dir = RIGHT
     }
 
 initPhysics3 :: Physics
 initPhysics3 = MkPhysics
-    {   pos = (0.0,0.0)
+    {   pos = (-300.0,0.0)
     ,   vel = (-200.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB 14 16    
+    ,   htb = MkHB (14*scaling) (16*scaling)    
     ,   dir = RIGHT
     }

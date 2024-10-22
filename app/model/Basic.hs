@@ -18,8 +18,8 @@ data IsGrounded = GROUNDED | AIRBORNE
     deriving (Show,Eq)
 data Direction  = RIGHT | LEFT
     deriving(Show,Eq)
-data IsAlive    = ALIVE | DEAD
-    deriving(Show,Eq)
+-- data IsAlive    = ALIVE | DEAD
+--     deriving(Show,Eq)
 
 data PlayerType   = MARIO | LUIGI
     deriving (Show,Eq)
@@ -31,6 +31,11 @@ data BlockType   = BRICK | QBLOCK     | EMPTYBLOCK | HIDDENBLOCK
     deriving (Show,Eq)
 data EntityType = MkPlayerType PlayerType | MkEnemyType EnemyType | MkItemType ItemType | MkBlockType BlockType
     deriving (Show,Eq)
+data Alive       = ALIVE | DEAD
+    deriving (Show,Eq)
+
+class IsAlive a where 
+  isAlive :: a -> Bool 
 
 data Physics = MkPhysics
     {   pos :: Point
@@ -45,7 +50,7 @@ data Physics = MkPhysics
 data Entity = MkEntity
     {   entity :: EntityType
     ,   physics :: Physics
-    ,   alive :: IsAlive
+    ,   alive :: Alive
     } deriving (Show,Eq)
 
 
