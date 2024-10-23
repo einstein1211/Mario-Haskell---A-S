@@ -38,9 +38,9 @@ playerState p = p'
     grounded = gnd phys == GROUNDED
 
     p'
-      | not grounded  = p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 16 16)}}}
-      | vx==0         = p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
-      | otherwise     = p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+      | not grounded  = scaleTo p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 16 16)}}}
+      | vx==0         = scaleTo p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+      | otherwise     = scaleTo p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
