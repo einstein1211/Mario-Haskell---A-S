@@ -9,7 +9,6 @@ import Model.Platform
 import View.Images
 import Graphics.Gloss
 import Data.Bifunctor
-import Model.Basic (EntityType(MkPlayerType, MkBlockType))
 
 viewObject :: Color -> Point -> Path -> Picture
 viewObject c p pt =
