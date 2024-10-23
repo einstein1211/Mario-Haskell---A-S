@@ -8,15 +8,25 @@ import Model.Block
 import Model.Model
 import Model.Platform
 import Controller.Physics
+import View.Scaling
 
 entityUpdate :: GameState -> GameState
-entityUpdate g =
-  g {
-    players = filter isAlive (map playerState (players g)),
-    enemies = filter isAlive (enemies g),
-    items   = filter isAlive (items g),
-    blocks  = filter isAlive (blocks g)
-  }
+entityUpdate g 
+  | isScaled g =
+    g {players = filter isAlive (map playerState (players g)),
+      enemies  = filter isAlive (enemies g),
+      items    = filter isAlive (items g),
+      blocks   = filter isAlive (blocks g)
+      }
+  | otherwise =
+    g {players  = map scaleTo (players g),
+      enemies   = map scaleTo (enemies g),
+      items     = map scaleTo (items g),
+      blocks    = map scaleTo (blocks g),
+      platforms = map scaleTo (platforms g),
+      isScaled  = True
+      }
+  
 
 playerState :: Player -> Player
 playerState p = p'

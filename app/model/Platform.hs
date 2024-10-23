@@ -12,7 +12,7 @@ data Platform = MkPlatform
     } deriving (Show,Eq)
 
 platformHB :: Hitbox
-platformHB = MkHB (16*scaling) (16*scaling)
+platformHB = MkHB 16 16
 
 makeFloor :: [Platform]
 makeFloor = makeFloor' 15

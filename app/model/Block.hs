@@ -5,7 +5,7 @@ import Model.Item
 import Model.Platform
 
 blockhb :: Hitbox
-blockhb = MkHB (16*scaling) (16*scaling)
+blockhb = MkHB 16 16
 
 instance IsAlive Block where
     isAlive b = bAlive b == ALIVE

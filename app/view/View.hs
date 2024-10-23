@@ -10,13 +10,13 @@ import View.Images
 import Graphics.Gloss
 import Data.Bifunctor
 
-viewObject :: Color -> Point -> Path -> Picture
-viewObject c p pt =
-  color c $ polygon $ locup p pt
-    where
-      locup :: Point -> Path -> Path
-      locup _ [] = []
-      locup l (s:ss) = bimap (fst l +) (snd l +) s: locup l ss
+-- viewObject :: Color -> Point -> Path -> Picture
+-- viewObject c p pt =
+--   color c $ polygon $ locup p pt
+--     where
+--       locup :: Point -> Path -> Path
+--       locup _ [] = []
+--       locup l (s:ss) = bimap (fst l +) (snd l +) s: locup l ss
 
 view :: GameState -> IO Picture
 view g = do
@@ -47,7 +47,7 @@ viewPlayer g (pl:pls) =
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
-      (w,h) = (width*scaling,height*scaling)
+      MkHB w h = htb $ physics $ pType pl
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
@@ -69,7 +69,7 @@ viewEnemy g (en:ens) =
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
-      (w,h) = (width*scaling,height*scaling)
+      MkHB w h = htb $ physics $ eType en
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]

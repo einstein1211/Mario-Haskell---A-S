@@ -35,6 +35,6 @@ initPhysics = MkPhysics
     ,   mxv = (500,500)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB (12*scaling) (16*scaling)
+    ,   htb = MkHB 12 16
     ,   dir = RIGHT
     }

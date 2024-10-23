@@ -23,6 +23,7 @@ data GameState = MkGameState
     ,   platforms :: [Platform]
     ,   pressedKeys :: [SpecialKey]
     ,   debugMode :: Bool
+    ,   isScaled :: Bool
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -39,4 +40,5 @@ initialState = MkGameState
     ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
     ,   debugMode = False
+    ,   isScaled = False
     }
