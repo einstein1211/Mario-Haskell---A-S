@@ -8,6 +8,7 @@ instance IsAlive Item where
 -- | Data descriving objects in Game (Coins & Powerups)
 data Item = NOITEM | MkItem
     {   iType :: Entity
+    ,   iPos :: GridIndex
     } deriving (Show,Eq)
 
 coin :: Item
@@ -15,6 +16,7 @@ coin = MkItem
     { iType = MkEntity {entity = MkItemType COIN, 
                         physics = initPhysics,
                         alive = ALIVE}
+    , iPos = MkGrid 2 7
     }
 
 -- mushroom

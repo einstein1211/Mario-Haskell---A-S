@@ -39,7 +39,7 @@ entityInteractions s g =
     }
     where
         pve p = foldr playerVsEnemy p (enemies g)
-        pvi p = p
+        pvi p = p --playerVsItem (mushroom makes mario big)
         evp e = foldr enemyVsPlayer e (players g)
         ivp i = foldr itemVsPlayer i (players g)
         bvp b = foldr blockVsPlayer b (players g)
@@ -100,7 +100,7 @@ itemVsPlayer p i = newi
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
-    ipos@(ix,iy)    = pos iphys
+    ipos@(ix,iy)    = gridPos $ iPos i
     ihb@(MkHB _ ih) = htb iphys
     iphys           = physics ent
     ent             = iType i

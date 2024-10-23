@@ -97,7 +97,7 @@ viewItem g (it:its) =
   where
     phys = physics (iType it) 
     img = coin1f1 --wont recognize coinSprite within scope even if import is edited >:@
-    bmp = uncurry translate (pos phys) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp = uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
     (MkHB width height) = hitbox img
 
     -- Send help.
