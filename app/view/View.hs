@@ -26,8 +26,16 @@ view g = do
 viewPure :: GameState -> Picture
 viewPure g = pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
   where
+    dbtext  = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
+    postext = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
+    veltext = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
+    acctext = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
+    player = head (players g)
+    (MkHB w h) = getHitbox player
+    (vx,vy) = getVel player
+    (ax,ay) = getAcc player
     debug
-      | debugMode g = color green $ scale 0.3 0.3 $ translate (-300) 300 (text "Debug Mode")
+      | debugMode g = dbtext <> postext <> veltext <> acctext
       | otherwise = blank
 
 --TODO: Implement scale function
@@ -43,7 +51,7 @@ viewPlayer g (pl:pls) =
       img = if gnd phys == GROUNDED then marioStand else marioJump
       bmp = uncurry translate (pos phys)$ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       MkHB width height = hitbox img
-      hbox 
+      hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
