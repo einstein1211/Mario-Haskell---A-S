@@ -16,7 +16,7 @@ fallspd :: Float
 fallspd = -3000
 
 friction :: Float
-friction = 2000
+friction = 1500
 
 applyPhysics :: Float -> GameState -> GameState
 applyPhysics secs gstate =
@@ -45,6 +45,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
       | otherwise        = vx + ax*s
     vy'
       | grounded && vy<0  = 0
+      | grounded && vy==0 = vy + ay*s
       | otherwise         = vy + (ay+grav)*s
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
@@ -110,18 +111,6 @@ inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
     (lp,rp) = (x2-(w/2),x2+(w/2))
     (bp,tp) = (y2-(h/2),y2+(h/2)+1)
 --BUG: not bouncing off underside of blocks
-
--- class InHitbox a where
---     inHitbox :: a -> a -> Bool
-
--- instance InHitbox Player where
---     inHitbox MkPlayer MkEnemy = 
-
--- class InHitbox a where
---     inHitbox :: a -> a -> Bool
-
--- instance InHitbox Player where
---     inHitbox MkPlayer MkEnemy = 
 
 intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
 intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =

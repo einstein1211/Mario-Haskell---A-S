@@ -7,12 +7,10 @@ import Model.Platform
 blockhb :: Hitbox
 blockhb = MkHB 16 16
 
-instance IsAlive Block where
-    isAlive b = bAlive b == ALIVE
-
-instance GetHitbox Block where
+instance GetPhysics Block where
     getHitbox b = pfHitbox $ bPlatform b
-
+    isAlive b = bAlive b == ALIVE
+    
 data Block = MkBlock
     {   bType :: BlockType
     ,   bPlatform :: Platform

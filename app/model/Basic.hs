@@ -32,11 +32,12 @@ data EntityType = MkPlayerType PlayerType | MkEnemyType EnemyType | MkItemType I
 data Alive       = ALIVE | DEAD
     deriving (Show,Eq)
 
-class IsAlive a where 
-  isAlive :: a -> Bool 
-
-class GetHitbox a where
+class GetPhysics a where
     getHitbox :: a -> Hitbox
+    getPos :: a -> Point
+    getVel :: a -> Velocity
+    getAcc :: a -> Acceleration
+    isAlive :: a -> Bool
 
 data Physics = MkPhysics
     {   pos :: Point
