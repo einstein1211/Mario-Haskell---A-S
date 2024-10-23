@@ -22,11 +22,11 @@ coin = MkItem
 -- using enemy physics to test
 initPhysics :: Physics
 initPhysics = MkPhysics 
-    {   pos = (0.0,0.0)
-    ,   vel = (200.0,300.0)
+    {   pos = (60.0,0.0)
+    ,   vel = (0.0,0.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB 14 16    
+    ,   htb = MkHB (10*scaling) (14*scaling)    
     ,   dir = RIGHT
     }

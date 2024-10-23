@@ -41,7 +41,7 @@ entityInteractions s g =
         pve p = foldr playerVsEnemy p (enemies g)
         pvi p = p
         evp e = foldr enemyVsPlayer e (players g)
-        ivp i = i
+        ivp i = foldr itemVsPlayer i (players g)
         bvp b = foldr blockVsPlayer b (players g)
 
 playerVsEnemy :: Enemy -> Player -> Player
@@ -88,6 +88,22 @@ enemyVsPlayer p e = newe
       | abs (px-ex) < abs (py-ey) && (py > ey) = e {eType = ent {alive = DEAD}}
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
+-- entityInteract :: Entity -> Entity -> Entity
+-- entityInteract
+
+itemVsPlayer :: Player -> Item -> Item
+itemVsPlayer p i = newi
+  where
+    newi
+      | intersects ipos ihb ppos phb = i {iType = ent {alive = DEAD}}
+      | otherwise                    = i
+    ppos@(px,py)    = pos pphys
+    phb@(MkHB _ ph) = htb pphys
+    pphys           = physics (pType p)
+    ipos@(ix,iy)    = pos iphys
+    ihb@(MkHB _ ih) = htb iphys
+    iphys           = physics ent
+    ent             = iType i
 -- entityInteract :: Entity -> Entity -> Entity
 -- entityInteract
 

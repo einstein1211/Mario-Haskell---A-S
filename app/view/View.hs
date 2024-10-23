@@ -41,7 +41,7 @@ view g = do
   (return . viewPure) g
 
 viewPure :: GameState -> Picture
-viewPure g = pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+viewPure g = pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
   where
     debug
       | debugMode g = color green $ scale 0.3 0.3 $ translate (-300) 300 (text "Debug Mode")
@@ -88,15 +88,15 @@ viewEnemy g (en:ens) =
       (x,y) = pos phys
       (w,h) = (width*scaling,height*scaling)
 
-viewItem :: [Item] -> [Picture]
-viewItem [] = [blank]
-viewItem (it:its) =
+viewItem :: GameState -> [Item] -> [Picture]
+viewItem _ [] = [blank]
+viewItem g (it:its) =
   case entity (iType it) of
-    MkItemType COIN -> bmp : viewItem its   
+    MkItemType COIN -> bmp : viewItem g its   
     _    -> [blank]         
   where
     phys = physics (iType it) 
-    img = goombaWalk1 --wont recognize coinSprite within scope even if import is edited >:@
+    img = coin1f1 --wont recognize coinSprite within scope even if import is edited >:@
     bmp = uncurry translate (pos phys) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
     (MkHB width height) = hitbox img
 

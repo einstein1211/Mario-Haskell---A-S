@@ -31,7 +31,7 @@ applyPhysics secs gstate =
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
 applyPhysics' :: Float -> GameState -> Entity -> Entity
-applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel = (vx',vy')}}
+applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -39,6 +39,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     grounded = gnd p == GROUNDED
     x'  = x   + vx*s
     y'  = y   + vy*s
+    enttype = entity e
     vx' --BUG: Makes you get stuck on walls 
       | grounded && vx>0 = vx + (ax-friction)*s
       | grounded && vx<0 = vx + (ax+friction)*s
@@ -46,6 +47,9 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     vy'
       | grounded && vy<0  = 0
       | otherwise         = vy + (ay+grav)*s
+    p'
+      | enttype == MkItemType COIN = p
+      | otherwise                  = p {pos = (x',y'), vel = (vx',vy')}
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
 playerPhysics :: GameState -> Player -> Player
