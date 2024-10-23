@@ -31,13 +31,16 @@ entityUpdate g
 playerState :: Player -> Player
 playerState p = p'
   where
-    phys = physics (pType p)
+    typ = pType p
+    phys = physics typ
+    hitbox = htb phys
     (vx,vy) = vel phys
     grounded = gnd phys == GROUNDED
+
     p'
-      | not grounded  = p {pMovement = JUMPING}
-      | vx==0         = p {pMovement = STANDING}
-      | otherwise     = p {pMovement = RUNNING}
+      | not grounded  = p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 16 16)}}}
+      | vx==0         = p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+      | otherwise     = p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =

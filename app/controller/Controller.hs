@@ -17,6 +17,9 @@ step secs gstate = do
   -- print (map pMovement (players gstate))
   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
 
+-- gameChange :: GameState -> GameState
+-- gameChange g = 
+
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
 -- input e g =

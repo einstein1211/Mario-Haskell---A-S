@@ -18,8 +18,6 @@ data IsGrounded = GROUNDED | AIRBORNE
     deriving (Show,Eq)
 data Direction  = RIGHT | LEFT
     deriving(Show,Eq)
--- data IsAlive    = ALIVE | DEAD
---     deriving(Show,Eq)
 
 data PlayerType   = MARIO | LUIGI
     deriving (Show,Eq)
@@ -37,6 +35,9 @@ data Alive       = ALIVE | DEAD
 class IsAlive a where 
   isAlive :: a -> Bool 
 
+class GetHitbox a where
+    getHitbox :: a -> Hitbox
+
 data Physics = MkPhysics
     {   pos :: Point
     ,   vel :: Velocity
@@ -52,7 +53,6 @@ data Entity = MkEntity
     ,   physics :: Physics
     ,   alive :: Alive
     } deriving (Show,Eq)
-
 
 fps :: Int
 fps = 100

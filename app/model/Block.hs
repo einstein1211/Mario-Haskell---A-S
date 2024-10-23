@@ -10,11 +10,8 @@ blockhb = MkHB 16 16
 instance IsAlive Block where
     isAlive b = bAlive b == ALIVE
 
--- data Block = MkBlock
---     {   bType :: Entity
---     ,   bContents :: Item
---     ,   bPos :: GridIndex
---     } deriving (Show,Eq)
+instance GetHitbox Block where
+    getHitbox b = pfHitbox $ bPlatform b
 
 data Block = MkBlock
     {   bType :: BlockType

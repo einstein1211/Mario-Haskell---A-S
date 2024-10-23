@@ -8,6 +8,9 @@ data EnemyAI = EASY | MEDIUM | HARD
 instance IsAlive Enemy where
     isAlive e = alive (eType e) == ALIVE
 
+instance GetHitbox Enemy where
+    getHitbox e = htb $ physics $ eType e
+
 -- | Data describing enemies in Game 
 data Enemy = MkEnemy
     {   eType :: Entity

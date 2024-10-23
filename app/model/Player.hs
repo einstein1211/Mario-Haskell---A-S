@@ -10,6 +10,9 @@ data Status     = SMALL | BIG       | FIRE
 instance IsAlive Player where 
   isAlive p = alive (pType p) == ALIVE 
 
+instance GetHitbox Player where
+    getHitbox p = htb $ physics $ pType p
+
 -- | Data describing players in Game 
 data Player = MkPlayer
     {   pType :: Entity

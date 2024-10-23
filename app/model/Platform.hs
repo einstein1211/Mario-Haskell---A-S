@@ -5,6 +5,9 @@ import Model.Basic
 data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
     deriving (Show,Eq)
 
+instance GetHitbox Platform where
+    getHitbox p = pfHitbox p
+
 data Platform = MkPlatform
     {   pfType :: PlatformType
     ,   pfHitbox :: Hitbox
