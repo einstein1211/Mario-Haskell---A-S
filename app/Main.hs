@@ -3,10 +3,14 @@ import Model.Model
 import Model.Basic
 import Controller.Controller
 import View.View
+import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 
+window :: Display
+window = InWindow "Mario" res (0,0)
+
 main :: IO ()
-main = playIO (InWindow "Mario" res (0, 0))
+main = playIO window
               blue            -- Background color
               fps               -- Frames per second
               initialState     -- Initial state

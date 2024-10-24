@@ -7,7 +7,9 @@ import Model.Enemy
 import Model.Block
 import Model.Item
 import Model.Platform
+import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
+import Data.Bifunctor
 
 grav :: Float
 grav = -2000
@@ -136,7 +138,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt)
+        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -165,7 +167,7 @@ platformCheck g e = foldr platformCheck' e plats
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt)
+        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -196,3 +198,21 @@ collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy)
       | r > fst uppbound = x-1
       | l < fst lowbound = x+1
       | otherwise = x
+
+blksz :: Scaling -> Float
+blksz s = 64*s
+
+gridPos :: GridIndex -> Scaling -> Point
+gridPos (MkGrid x y) s = translate00 (x*blk+(blk/2),-(y*blk)-(blk/2)) s
+  where
+    blk = blksz s
+
+translate00 :: Point -> Scaling -> Point
+translate00 (x,y) s = (x-(fst uppbound *s),y+(snd uppbound *s))
+
+uppbound :: (Float,Float)
+uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
+
+lowbound :: (Float,Float)
+lowbound = (-fst uppbound,-snd uppbound)
+-- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
