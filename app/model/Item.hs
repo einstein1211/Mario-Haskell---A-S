@@ -41,7 +41,7 @@ initPhysicsCoin = MkPhysics
 initPhysicsMushroom :: Physics
 initPhysicsMushroom = MkPhysics 
     {   pos = (300.0,0.0)
-    ,   vel = (200.0,300.0)
+    ,   vel = (100.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE

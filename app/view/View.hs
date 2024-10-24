@@ -98,7 +98,10 @@ viewItem g (it:its) = bmp : viewItem g its
         MkItemType MUSHROOM -> mushroom1   
         _    -> undefined         
     phys = physics (iType it) 
-    bmp = uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp = 
+      case entity (iType it) of
+        MkItemType COIN -> uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+        _               -> uncurry translate (pos (physics (iType it))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
     (MkHB width height) = hitbox img
 
     -- img = mushroom ?

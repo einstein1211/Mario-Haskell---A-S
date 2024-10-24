@@ -48,7 +48,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
       | grounded && vy<0  = 0
       | otherwise         = vy + (ay+grav)*s
     p'
-      | enttype == MkItemType COIN = p
+      -- | enttype == MkItemType MUSHROOM = p
       | otherwise                  = p {pos = (x',y'), vel = (vx',vy')}
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 

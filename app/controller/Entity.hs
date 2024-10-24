@@ -104,7 +104,10 @@ itemVsPlayer p i = newi
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
-    ipos@(ix,iy)    = gridPos $ iPos i
+    ipos@(ix,iy)    = 
+      case entity (iType i) of
+        MkItemType COIN -> gridPos $ iPos i
+        _               -> pos iphys
     ihb@(MkHB _ ih) = htb iphys
     iphys           = physics ent
     ent             = iType i
