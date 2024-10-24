@@ -90,17 +90,18 @@ viewEnemy g (en:ens) =
 
 viewItem :: GameState -> [Item] -> [Picture]
 viewItem _ [] = [blank]
-viewItem g (it:its) =
-  case entity (iType it) of
-    MkItemType COIN -> bmp : viewItem g its   
-    _    -> [blank]         
+viewItem g (it:its) = bmp : viewItem g its
   where
+    img =
+      case entity (iType it) of
+        MkItemType COIN     -> coin1f1
+        MkItemType MUSHROOM -> mushroom1   
+        _    -> undefined         
     phys = physics (iType it) 
-    img = coin1f1 --wont recognize coinSprite within scope even if import is edited >:@
     bmp = uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
     (MkHB width height) = hitbox img
 
-    -- Send help.
+    -- img = mushroom ?
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]

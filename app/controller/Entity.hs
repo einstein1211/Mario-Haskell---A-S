@@ -39,8 +39,8 @@ entityInteractions s g =
     }
     where
         pve p = foldr playerVsEnemy p (enemies g)
-        pvi p = p --playerVsItem (mushroom makes mario big)
         evp e = foldr enemyVsPlayer e (players g)
+        pvi p = p --playerVsItem (mushroom makes mario big)
         ivp i = foldr itemVsPlayer i (players g)
         bvp b = foldr blockVsPlayer b (players g)
 
@@ -90,6 +90,10 @@ enemyVsPlayer p e = newe
       | otherwise = e
 -- entityInteract :: Entity -> Entity -> Entity
 -- entityInteract
+
+-- playerVsItem :: Item -> Player -> Player
+-- playerVsItem i p = newp
+
 
 itemVsPlayer :: Player -> Item -> Item
 itemVsPlayer p i = newi
