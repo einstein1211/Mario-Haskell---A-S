@@ -41,10 +41,10 @@ initPhysicsCoin = MkPhysics
 initPhysicsMushroom :: Physics
 initPhysicsMushroom = MkPhysics 
     {   pos = (300.0,0.0)
-    ,   vel = (100.0,300.0)
+    ,   vel = (100.0,0.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB (16*scaling) (16*scaling)    
+    ,   htb = MkHB (14*scaling) (16*scaling)    
     ,   dir = RIGHT
     }
