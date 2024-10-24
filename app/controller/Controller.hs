@@ -2,6 +2,7 @@ module Controller.Controller where
 
 import Model.Model
 import Model.Player
+import View.Scaling
 import Controller.Physics
 import Controller.Entity
 import Graphics.Gloss.Interface.IO.Game
@@ -17,14 +18,30 @@ step secs gstate = do
   -- print (map pMovement (players gstate))
   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
 
+-- gameChange :: GameState -> GameState
+-- gameChange g = 
+
 -- | Handle user input
 input :: Event -> GameState -> IO GameState
 -- input e g =
 --   do
 --     putStrLn $ show e
 --     return g
-input e gstate = return (inputKey e gstate)
+input e gstate = return $ (inputKey e . resizeEvent e) gstate
 -- input _ = return
+
+resizeEvent :: Event -> GameState -> GameState
+resizeEvent (EventResize (x,y)) g = windowScaling (x,y) g
+resizeEvent _ g = g
+
+windowScaling :: Resolution -> GameState -> GameState
+windowScaling (x,y) g = g {windowScale = sx, entityScale = sx*4, reScaled = True}
+  where
+    fac  = fromIntegral y / fromIntegral x
+    lead 
+      | fac<0.75  = y `div` 12
+      | otherwise = x `div` 16
+    (sx,sy) = (fromIntegral (lead*16)/1024.0,fromIntegral (lead*12)/768.0)
 
 inputKey :: Event -> GameState -> GameState
 inputKey e@(EventKey (SpecialKey key) state _ _) gstate

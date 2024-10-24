@@ -5,6 +5,9 @@ import Model.Basic
 data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
     deriving (Show,Eq)
 
+instance GetPhysics Platform where
+    getHitbox p = pfHitbox p
+
 data Platform = MkPlatform
     {   pfType :: PlatformType
     ,   pfHitbox :: Hitbox
@@ -12,7 +15,7 @@ data Platform = MkPlatform
     } deriving (Show,Eq)
 
 platformHB :: Hitbox
-platformHB = MkHB (16*scaling) (16*scaling)
+platformHB = MkHB 16 16
 
 makeFloor :: [Platform]
 makeFloor = makeFloor' 15

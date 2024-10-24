@@ -74,6 +74,7 @@ executable Mario-Haskell-A-S
                         Controller.Entity
                         View.View
                         View.Images
+                        View.Scaling
 
     -- LANGUAGE extensions used by modules in this package.
     -- other-extensions:

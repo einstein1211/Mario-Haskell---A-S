@@ -5,6 +5,7 @@ import Model.Enemy
 import Model.Item
 import Model.Block
 import Model.Platform
+import View.Scaling
 
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 
@@ -23,6 +24,11 @@ data GameState = MkGameState
     ,   platforms :: [Platform]
     ,   pressedKeys :: [SpecialKey]
     ,   debugMode :: Bool
+    ,   windowRes :: Resolution
+    ,   windowScale :: Scaling
+    ,   entityScale :: Scaling
+    ,   isScaled :: Bool
+    ,   reScaled :: Bool
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -39,4 +45,9 @@ initialState = MkGameState
     ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   pressedKeys = []
     ,   debugMode = False
+    ,   windowRes = (1024,768)
+    ,   windowScale = 1
+    ,   entityScale = 4
+    ,   isScaled = False
+    ,   reScaled = False
     }

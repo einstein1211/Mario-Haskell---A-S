@@ -1,14 +1,25 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Player where
 
 import Model.Basic
+import Graphics.Gloss
 
 data Movement   = STANDING | RUNNING | CROUCHED | JUMPING
     deriving (Show,Eq)
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)
 
-instance IsAlive Player where 
-  isAlive p = alive (pType p) == ALIVE 
+instance GetPhysics Player where
+    getPos :: Player -> Point
+    getPos p = pos $ physics $ pType p
+    getVel :: Player -> Velocity
+    getVel p = vel $ physics $ pType p
+    getAcc :: Player -> Acceleration
+    getAcc p = acc $ physics $ pType p
+    getHitbox :: Player -> Hitbox
+    getHitbox p = htb $ physics $ pType p
+    isAlive :: Player -> Bool
+    isAlive p = alive (pType p) == ALIVE  
 
 -- | Data describing players in Game 
 data Player = MkPlayer
@@ -35,6 +46,6 @@ initPhysics = MkPhysics
     ,   mxv = (500,500)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB (12*scaling) (16*scaling)
+    ,   htb = MkHB 12 16
     ,   dir = RIGHT
     }
