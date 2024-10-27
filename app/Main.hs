@@ -24,17 +24,4 @@ main = playIO window
 
 -- images :: [String]
 -- images = []
-
-
--- Load your frames as images
---     do
---     frame1 <- loadBMP "frame1.bmp"
---     frame2 <- loadBMP "frame2.bmp"
---     let frames = [frame1, frame2]
---     animate (InWindow "Sprite Animation" (800, 600) (100, 100)) white (frameRenderer frames)
-
--- frameRenderer :: [Picture] -> Float -> Picture
--- frameRenderer frames time =
---     let frameCount = length frames
---         currentFrame = frames !! (floor (time * 10) `mod` frameCount)
---     in currentFrame
+    
