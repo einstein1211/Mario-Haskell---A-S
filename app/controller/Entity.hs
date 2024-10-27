@@ -66,7 +66,7 @@ entityInteractions s g =
         pvi p = p
         evp e = foldr enemyVsPlayer e (players g)
         ivp i = i
-        bvp b = foldr (blockVsPlayer (entityScale g)) b (players g)
+        bvp b = foldr (blockVsPlayer (windowScale g)) b (players g)
 
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
@@ -132,7 +132,7 @@ blockVsPlayer scale p b = newb
     hidden = bType b == HIDDENBLOCK
     b'
       | abs (px-bx) < abs (py-by) && (py < by) && hidden && vy > 0 = hit
-      | abs (px-bx) < abs (py-by) && (py < by) && not hidden= hit
+      | abs (px-bx) < abs (py-by) && (py < by) && not hidden = hit
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =

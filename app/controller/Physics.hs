@@ -108,16 +108,16 @@ maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
         | otherwise = vy
 
 inHitbox :: Point -> Point -> Hitbox -> Bool
-inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>lp && y1>bp && x1<rp && y1<tp
+inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>=lp && y1>=bp && x1<=rp && y1<=tp
   where
     (lp,rp) = (x2-(w/2),x2+(w/2))
-    (bp,tp) = (y2-(h/2),y2+(h/2)+1)
+    (bp,tp) = (y2-(h/2),y2+(h/2))
 --BUG: not bouncing off underside of blocks
 
 intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
 intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =
-  inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2 ||
-  inHitbox c5 p1 hb1 || inHitbox c6 p1 hb1 || inHitbox c7 p1 hb1 || inHitbox c8 p1 hb1
+  inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2
+  || inHitbox c5 p1 hb1 || inHitbox c6 p1 hb1 || inHitbox c7 p1 hb1 || inHitbox c8 p1 hb1
     where
       c1 = (x1+(w1/2),y1+(h1/2))
       c2 = (x1-(w1/2),y1+(h1/2))
