@@ -59,6 +59,3 @@ animateFrames frames time =
         frameCount = length frames
         currentFrameIndex = floor (time * 10) `mod` frameCount
     in frames !! currentFrameIndex
-
-frames = loadFrames [, , ] -- load frames
-animate (animateFrames frames)

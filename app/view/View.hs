@@ -11,6 +11,8 @@ import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
 
+import Graphics.Gloss.Interface.Pure.Animate
+
 
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
@@ -68,7 +70,8 @@ viewPlayer g (pl:pls) =
         GROUNDED -> marioStand
         -- RUNNING -> marioRun
         _ -> marioJump
-      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
+      frames = [imageToPicture goombaWalk1, imageToPicture goombaWalk2]
+      bmp = uncurry translate (pos phys)$ Scale s s $ animateFrames frames $ time g -- imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
@@ -76,13 +79,7 @@ viewPlayer g (pl:pls) =
       MkHB w h = htb $ physics $ pType pl
       s = entityScale g
 
---create marioRun gif
-
-bmpify = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
-
-loadFrames = do
-  frames <- loadFrames [imageToPicture marioStand , , ] -- load frames
-  animate (animateFrames frames)
+frames = [imageToPicture goombaWalk1, imageToPicture goombaWalk2]
 
 animateFrames :: [Picture] -> Float -> Picture
 animateFrames frames time = 
@@ -91,18 +88,6 @@ animateFrames frames time =
         currentFrameIndex = floor (time * 10) `mod` frameCount
     in frames !! currentFrameIndex
 
--- -- Display the animation by looping through frames
--- animateFrames :: [Picture] -> Float -> Picture
--- animateFrames frames time = 
---     let
---         frameCount = length frames
---         currentFrameIndex = floor (time * 10) `mod` frameCount
---     in frames !! currentFrameIndex
-
--- main :: IO ()
--- main = do
---     frames <- loadFrames ["frame1.bmp", "frame2.bmp", "frame3.bmp", "frame4.bmp"] -- Load your frames here
---     animate $ animateFrames frames
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
