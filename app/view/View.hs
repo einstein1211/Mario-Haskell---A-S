@@ -6,6 +6,7 @@ import Model.Player
 import Model.Enemy
 import Model.Block
 import Model.Platform
+import Model.Item
 import View.Images
 import View.Scaling
 import Controller.Physics
@@ -84,6 +85,24 @@ viewEnemy g (en:ens) =
       (x,y) = pos phys
       MkHB w h = htb $ physics $ eType en
       s = entityScale g
+
+viewItem :: GameState -> [Item] -> [Picture]
+viewItem _ [] = [blank]
+viewItem g (it:its) = bmp : viewItem g its
+  where
+    img =
+      case entity (iType it) of
+        MkItemType COIN     -> coin1f1
+        MkItemType MUSHROOM -> mushroom1   
+        _    -> undefined         
+    phys = physics (iType it) 
+    bmp = 
+      case entity (iType it) of
+        MkItemType COIN -> uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+        _               -> uncurry translate (pos (physics (iType it))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    (MkHB width height) = hitbox img
+
+    -- img = mushroom ?
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
