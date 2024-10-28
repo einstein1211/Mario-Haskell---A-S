@@ -24,6 +24,17 @@ view g = do
   -- putStrLn $ show $ pressedKeys g
   (return . viewPure) g
 
+imageToPicture :: Image -> Picture
+imageToPicture img =
+  Bitmap $ bitmapDataOfByteString
+    (round width)
+    (round height)
+    (BitmapFormat BottomToTop PxRGBA)
+    (bytestring img)
+    False
+  where
+    MkHB width height = hitbox img
+
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
   windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
@@ -53,8 +64,7 @@ viewPlayer g (pl:pls) =
     where
       phys = physics (pType pl)
       img = if gnd phys == GROUNDED then marioStand else marioJump
-      bmp = uncurry translate (pos phys)$ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      MkHB width height = hitbox img
+      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
@@ -76,8 +86,7 @@ viewEnemy g (en:ens) =
       bmp
         | gnd phys == GROUNDED = translate x y $ Scale s s bmp'
         | otherwise = translate x y $ Scale s s $ rotate 180 bmp'
-      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      MkHB width height = hitbox img
+      bmp' = imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
@@ -98,8 +107,7 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
         DIRT    -> dirt1
         STAIR   -> stair1
         BLOCK   -> noimg
-    MkHB width height = hitbox img
-    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp | img /= noimg = translate x y $ Scale es es $ imageToPicture img
         | otherwise = blank
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
@@ -119,8 +127,7 @@ viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks
         QBLOCK      -> question1f1
         EMPTYBLOCK  -> emptyblock1
         HIDDENBLOCK -> noimg
-    MkHB width height = hitbox img
-    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp | img /= noimg = translate x y $ Scale es es $ imageToPicture img
         | otherwise = blank
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]

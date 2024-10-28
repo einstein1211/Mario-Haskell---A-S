@@ -25,6 +25,7 @@ main = playIO window
 -- images :: [String]
 -- images = []
 
+-- animated sprites in gloss unproven method 1
 -- Load your frames as images
 --     do
 --     frame1 <- loadBMP "frame1.bmp"
@@ -37,3 +38,7 @@ main = playIO window
 --     let frameCount = length frames
 --         currentFrame = frames !! (floor (time * 10) `mod` frameCount)
 --     in currentFrame
+
+-- animated sprites in gloss unproven method 2
+-- -> caball install gloss-juicy
+-- load images as Pictures with loadJuicyPNG
