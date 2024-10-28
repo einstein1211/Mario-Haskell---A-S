@@ -9,11 +9,11 @@ import Model.Block
 import Model.Platform
 import qualified Data.Map as Map
 
-data Spawn = MkPlayer Player | MkEnemy Enemy | MkItem Item | NoSpawn
+data Spawn = MkPlSpawn Player | MkEnSpawn Enemy | MkItSpawn Item | NoSpawn
     deriving (Show,Eq)
-data Chunk = MkBlock Block | MkPlatform Platform | NoChunk
+data Chunk = MkBlkChunk Block | MkPltChunk Platform | NoChunk
     deriving (Show,Eq)
-data Tile = MkTile Spawn Chunk GridIndex
+data Tile = MkTile Spawn Chunk Int
     deriving (Show,Eq)
 newtype Column = MkColumn [Tile]
     deriving (Show,Eq)
@@ -25,24 +25,42 @@ class ColumnFunctions a where
 
 instance ColumnFunctions Tile where
     addToColumn :: Tile -> Column -> Column
-    addToColumn t@(MkTile _ _ (MkGrid _ y)) (MkColumn tiles)  = MkColumn (take (round(y-1)) tiles ++ t : drop (round y) tiles)
+    addToColumn t@(MkTile _ _ i) (MkColumn tiles)  = MkColumn (take i tiles ++ t : drop (i+1) tiles)
 
 instance ColumnFunctions Int where
     addToColumn :: Int -> Column -> Column
-    addToColumn i (MkColumn tiles) = MkColumn (take (i-1) tiles ++ emptyTile (MkGrid 1.0 (fromIntegral i)) : drop i tiles)
+    addToColumn i (MkColumn tiles) = MkColumn (take (i) tiles ++ (emptyTile i) : drop (i+1) tiles)
 
 
-emptyTile :: GridIndex -> Tile
-emptyTile (MkGrid x y) = MkTile NoSpawn NoChunk (MkGrid x y)
+emptyTile :: Int -> Tile
+emptyTile i = MkTile NoSpawn NoChunk i
 
 testColumn :: Column
-testColumn = emptyColumn
+testColumn = standardColumn 0
 
 list :: [Int]
-list = [1..16]
+list = [0..11]
 
 emptyColumn :: Column
-emptyColumn = foldr addToColumn (MkColumn []) list
+emptyColumn = foldl (flip addToColumn) (MkColumn []) list
+
+dirtColumn :: Column
+dirtColumn = foldl addDirt emptyColumn list
+    where
+        addDirt ac c = addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (grid c))) c) ac
+        grid x = (MkGrid 0 (fromIntegral x))
+
+standardColumn :: ColumnNumber -> Column
+standardColumn cn = addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (MkGrid cn 11))) 11) emptyColumn
+-- makePlatform :: GridIndex -> PlatformType -> Platform
+-- makePlatform grd plt = MkPlatform
+--     {   pfType = plt
+--     ,   pfHitbox = platformHB
+--     ,   pfPos = grd
+--     }
 
 testLevel :: Level
-testLevel = Map.insert 1 testColumn Map.empty
+testLevel = f 15 Map.empty
+  where
+    f 0 m =  Map.insert 0 (standardColumn 0) m
+    f x m = f (x-1) (Map.insert x (standardColumn x) m)

@@ -6,13 +6,17 @@ data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR 
     deriving (Show,Eq)
 
 instance GetPhysics Platform where
-    getHitbox p = pfHitbox p
+    getHitbox = pfHitbox
 
 data Platform = MkPlatform
     {   pfType :: PlatformType
     ,   pfHitbox :: Hitbox
     ,   pfPos :: GridIndex
-    } deriving (Show,Eq)
+    } deriving (Eq)
+
+instance Show Platform where
+    show (MkPlatform pft _ (MkGrid x y)) = 
+        show pft ++ " (" ++ show x ++ "," ++ show y ++ ")"
 
 platformHB :: Hitbox
 platformHB = MkHB 16 16

@@ -203,7 +203,7 @@ blksz :: Scaling -> Float
 blksz s = 64*s
 
 gridPos :: GridIndex -> Scaling -> Point
-gridPos (MkGrid x y) s = translate00 (x*blk+(blk/2),-(y*blk)-(blk/2)) s
+gridPos (MkGrid x y) s = translate00 (fromIntegral x*blk+(blk/2),-(fromIntegral y*blk)-(blk/2)) s
   where
     blk = blksz s
 

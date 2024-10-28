@@ -6,10 +6,13 @@ import Model.Player
 import Model.Enemy
 import Model.Block
 import Model.Platform
+import Model.Level
 import View.Images
 import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
+
+import qualified Data.Map as Map
 
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
@@ -26,7 +29,9 @@ view g = do
 
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+  windowToRatio wScale $ pictures $ debug : viewLevel g (level g)
+  -- windowToRatio wScale $ pictures $ debug : viewColumn g (column g)
+  -- windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewColumn g (column g)
   where
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
@@ -41,8 +46,6 @@ viewPure g@MkGameState {windowScale = wScale} =
     debug
       | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
       | otherwise = blank
-
---TODO: Implement scale function
 
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
@@ -85,6 +88,29 @@ viewEnemy g (en:ens) =
       MkHB w h = htb $ physics $ eType en
       s = entityScale g
 
+viewLevel :: GameState -> Level -> [Picture]
+viewLevel g level = Map.foldl f [Blank] level
+  where
+    f ac c = viewColumn g c <> ac
+
+viewColumn :: GameState -> Column -> [Picture]
+viewColumn _ (MkColumn []) = [blank]
+-- viewColumn g (MkColumn ((MkTile s NoChunk grid):ts)) = ent : viewColumn g (MkColumn ts)
+viewColumn g (MkColumn ((MkTile _ NoChunk _):ts)) = blank : viewColumn g (MkColumn ts)
+viewColumn g (MkColumn ((MkTile _ c _):ts)) = obstacle : viewColumn g (MkColumn ts)
+  where
+    obstacle =
+      case c of
+        MkBlkChunk b    -> viewBlock2 g b
+        MkPltChunk p -> viewPlatform2 g p
+    -- ent = 
+    --   case s of
+    --     MkPlayer    -> undefined
+    --     MkEnemy     -> undefined
+    --     MkItem      -> undefined
+    
+
+
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
 viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
@@ -109,9 +135,52 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
     es = entityScale g
     ws = windowScale g
 
+viewPlatform2 :: GameState -> Platform -> Picture
+viewPlatform2 g plt = bmp <> hbox
+  where
+    img =
+      case pfType plt of
+        PIPEL   -> pipe_l1
+        PIPER   -> pipe_r1
+        PIPETL  -> pipe_tl1
+        PIPETR  -> pipe_tr1
+        DIRT    -> dirt1
+        STAIR   -> stair1
+        BLOCK   -> noimg
+    MkHB width height = hitbox img
+    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+        | otherwise = blank
+    hbox
+        | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+        | otherwise   = blank
+    (x,y) = gridPos (pfPos plt) ws
+    MkHB w h = pfHitbox plt
+    es = entityScale g
+    ws = windowScale g
+
 viewBlock :: GameState -> [Block] -> [Picture]
 viewBlock _ [] = [blank]
 viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks
+  where
+    img =
+      case bType blck of
+        BRICK       -> brick1
+        QBLOCK      -> question1f1
+        EMPTYBLOCK  -> emptyblock1
+        HIDDENBLOCK -> noimg
+    MkHB width height = hitbox img
+    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+        | otherwise = blank
+    hbox
+        | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
+        | otherwise   = blank
+    (x,y) = gridPos (pfPos (bPlatform blck)) ws
+    MkHB w h = pfHitbox (bPlatform blck)
+    es = entityScale g
+    ws = windowScale g
+
+viewBlock2 :: GameState -> Block -> Picture
+viewBlock2 g blck = bmp <> hbox
   where
     img =
       case bType blck of
