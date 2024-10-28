@@ -4,7 +4,7 @@ module Model.Player where
 import Model.Basic
 import Graphics.Gloss
 
-data Movement   = STANDING | RUNNING | CROUCHED | JUMPING
+data Movement   = STANDING | RUNNING | CROUCHING | JUMPING -- | SKIDDING
     deriving (Show,Eq)
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)

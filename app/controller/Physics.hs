@@ -92,7 +92,9 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | not (up||space)   = 0
       | otherwise         = jmpt
     movement
-      | down = CROUCHED
+      | left = RUNNING
+      | right = RUNNING
+      | down = CROUCHING -- ?
       | otherwise = pMovement pl
 
 maxSpdCheck :: Entity -> Entity
