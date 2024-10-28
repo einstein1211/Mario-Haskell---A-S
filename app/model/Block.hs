@@ -5,17 +5,12 @@ import Model.Item
 import Model.Platform
 
 blockhb :: Hitbox
-blockhb = MkHB (16*scaling) (16*scaling)
+blockhb = MkHB 16 16
 
-instance IsAlive Block where
+instance GetPhysics Block where
+    getHitbox b = pfHitbox $ bPlatform b
     isAlive b = bAlive b == ALIVE
-
--- data Block = MkBlock
---     {   bType :: Entity
---     ,   bContents :: Item
---     ,   bPos :: GridIndex
---     } deriving (Show,Eq)
-
+    
 data Block = MkBlock
     {   bType :: BlockType
     ,   bPlatform :: Platform

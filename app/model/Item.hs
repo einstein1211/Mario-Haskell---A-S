@@ -1,8 +1,12 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Item where
 
 import Model.Basic
-
-instance IsAlive Item where
+    
+instance GetPhysics Item where
+    getHitbox :: Item -> Hitbox
+    getHitbox i = htb $ physics $ iType i
+    isAlive :: Item -> Bool
     isAlive i = alive (iType i) == ALIVE
 
 -- | Data descriving objects in Game (Coins & Powerups)
