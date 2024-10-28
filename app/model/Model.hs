@@ -5,6 +5,7 @@ import Model.Enemy
 import Model.Item
 import Model.Block
 import Model.Platform
+import Model.Level
 import View.Scaling
 
 import Graphics.Gloss.Interface.IO.Game (SpecialKey)
@@ -22,6 +23,7 @@ data GameState = MkGameState
     ,   items :: [Item]
     ,   blocks :: [Block]
     ,   platforms :: [Platform]
+    ,   level :: Level
     ,   pressedKeys :: [SpecialKey]
     ,   debugMode :: Bool
     ,   windowRes :: Resolution
@@ -40,9 +42,11 @@ initialState = MkGameState
     ,   players = [mario]
     ,   enemies = [goomba,goomba2]
     ,   items = []
-    ,   blocks = [brick,qblock,empblock,hidblock]
-    -- ,   platforms = []
-    ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
+    ,   blocks = []
+    -- ,   blocks = [brick,qblock,empblock,hidblock]
+    ,   platforms = []
+    -- ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
+    ,   level = testLevel
     ,   pressedKeys = []
     ,   debugMode = False
     ,   windowRes = (1024,768)

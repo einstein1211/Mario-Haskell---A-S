@@ -69,6 +69,7 @@ executable Mario-Haskell-A-S
                         Model.Item
                         Model.Block
                         Model.Platform
+                        Model.Level
                         Controller.Controller
                         Controller.Physics
                         Controller.Entity
@@ -82,6 +83,7 @@ executable Mario-Haskell-A-S
     -- Other library packages from which modules are imported.
     build-depends:    base ^>=4.17.2.1,
                       gloss ^>=1.13.2.2,
+                      containers,
                       bmp,
                       bytestring
 
