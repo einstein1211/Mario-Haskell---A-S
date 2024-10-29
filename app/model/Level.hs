@@ -17,7 +17,7 @@ data Chunk = MkBlkChunk Block | MkPltChunk Platform | NoChunk
 data Tile = MkTile Spawn Chunk Int
     deriving (Eq)
 newtype Column = MkColumn [Tile]
-    deriving (Show,Eq)
+    deriving (Eq)
 type ColumnNumber = Int
 type Level = Map.Map ColumnNumber Column
 
@@ -33,6 +33,10 @@ instance Show Chunk where
 instance Show Tile where
     show (MkTile NoSpawn NoChunk _) = "()"
     show (MkTile spawn chunk i) = "("++show spawn++","++show chunk++") "++show i
+instance Show Column where
+    show (MkColumn []) = "\n"
+    show (MkColumn (t:ts)) = show t ++ show (MkColumn ts)
+
 
 class ColumnFunctions a where
     addToColumn :: a -> Column -> Column
@@ -68,8 +72,11 @@ instance ColumnFunctions Platform where
             f (MkTile _ (MkPltChunk p) _) ac = p:ac
             f _ ac = ac
 
+instance GridIndexFunctions Column where
+    changeGridIndex grd (MkColumn tiles) = MkColumn $ map (changeGridIndex grd) tiles
+
 instance GridIndexFunctions Tile where
-    changeGridIndex grd (MkTile spawn chunk y) = MkTile spawn (changeGridIndex grd chunk) y
+    changeGridIndex (MkGrid x y) (MkTile spawn chunk i) = MkTile spawn (changeGridIndex (MkGrid x i) chunk) i
     getGridIndex (MkTile _ chunk _) = getGridIndex chunk
 
 instance GridIndexFunctions Chunk where
