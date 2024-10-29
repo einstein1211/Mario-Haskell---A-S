@@ -40,11 +40,12 @@ imageToPicture img =
   where
     MkHB width height = hitbox img
 
-animateFrames :: [Image] -> Float -> Image
-animateFrames frames time = 
+-- takes a list of frames, a rate (for animation speed) and time.
+animateFrames :: [Image] -> Float -> Float -> Image
+animateFrames frames rate time = 
     let
         frameCount = length frames
-        currentFrameIndex = floor (time * 10) `mod` frameCount
+        currentFrameIndex = floor (time * rate) `mod` frameCount
     in frames !! currentFrameIndex
 
 viewPure :: GameState -> Picture
@@ -77,7 +78,7 @@ viewPlayer g (pl:pls) =
       phys = physics (pType pl)
       img 
         | not (isGrounded pl) = marioJump
-        | pMovement pl == WALKING = animateFrames framesWalking $ time g
+        | pMovement pl == WALKING = animateFrames framesWalking 10 $ time g
         | otherwise = marioStand
       framesWalking = [mariof1, mariof2, mariof3]
       bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img 
@@ -99,7 +100,7 @@ viewEnemy g (en:ens) =
       -- FIXME: DA HEK IS GOING ON HERE 
       phys = physics (eType en)
       -- img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
-      img = animateFrames framesGoomba $ time g
+      img = animateFrames framesGoomba 5 $ time g
       framesGoomba = [goombaWalk1, goombaWalk2]
       bmp
         | gnd phys == GROUNDED = translate x y $ Scale s s $ imageToPicture img
@@ -118,7 +119,7 @@ viewItem g (it:its) = bmp : viewItem g its
       phys = physics (iType it)
       img =
         case entity (iType it) of
-          MkItemType COIN     -> animateFrames framesCoin $ time g
+          MkItemType COIN     -> animateFrames framesCoin 10 $ time g
           MkItemType MUSHROOM -> mushroom1
           _    -> undefined     
       framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
