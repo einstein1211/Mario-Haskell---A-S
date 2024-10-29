@@ -5,7 +5,9 @@ import Model.Player
 import View.Scaling
 import Controller.Physics
 import Controller.Entity
+import Controller.LevelUpdate
 import Graphics.Gloss.Interface.IO.Game
+import Debug.Trace (traceIO)
 
 -- import System.Exit
 
@@ -14,11 +16,11 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
 step :: Float -> GameState -> IO GameState
 step secs gstate = do
-  -- print (column gstate)
+  -- print (level gstate)
   -- putStrLn "\n"
   -- print (players gstate)
   -- print (map pMovement (players gstate))
-  return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
+  return $ entityInteractions secs $ applyPhysics secs $ levelUpdate $ entityUpdate gstate {time = time gstate + secs}
 
 -- gameChange :: GameState -> GameState
 -- gameChange g = 
@@ -29,7 +31,10 @@ input :: Event -> GameState -> IO GameState
 --   do
 --     putStrLn $ show e
 --     return g
-input e gstate = return $ (inputKey e . resizeEvent e) gstate
+input e gstate = 
+  do 
+    traceIO $ show e
+    return $ (inputKey e . resizeEvent e) gstate
 -- input _ = return
 
 resizeEvent :: Event -> GameState -> GameState
@@ -50,7 +55,7 @@ inputKey e@(EventKey (SpecialKey key) state _ _) gstate
   | dkey = playerMove e gstate
   | otherwise =
     case key of
-      KeyEsc   -> undefined--exitSuccess
+      KeyEsc   -> error (show (slidingWindow gstate))--exitSuccess
       KeyCtrlL -> if state == Down then gstate {debugMode = not (debugMode gstate)} else gstate
       _ -> error ":("
       where

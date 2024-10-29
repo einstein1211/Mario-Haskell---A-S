@@ -32,12 +32,17 @@ data EntityType = MkPlayerType PlayerType | MkEnemyType EnemyType | MkItemType I
 data Alive       = ALIVE | DEAD
     deriving (Show,Eq)
 
-class GetPhysics f where
+class PhysicsFunctions f where
     getHitbox :: f -> Hitbox
     getPos    :: f -> Point
     getVel    :: f -> Velocity
     getAcc    :: f -> Acceleration
     isAlive   :: f -> Bool
+    moveBy    :: (Float,Float) -> f -> f
+
+class GridIndexFunctions a where
+    changeGridIndex :: GridIndex -> a -> a
+    getGridIndex :: a -> GridIndex
 
 data Physics = MkPhysics
     {   pos :: Point

@@ -3,7 +3,7 @@ module Model.Item where
 
 import Model.Basic
     
-instance GetPhysics Item where
+instance PhysicsFunctions Item where
     getHitbox :: Item -> Hitbox
     getHitbox i = htb $ physics $ iType i
     isAlive :: Item -> Bool

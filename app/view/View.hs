@@ -29,9 +29,9 @@ view g = do
 
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
-  windowToRatio wScale $ pictures $ debug : viewLevel g (level g)
+  -- windowToRatio wScale $ pictures $ debug : viewLevel g (level g) ++ viewPlayer g (players g)
   -- windowToRatio wScale $ pictures $ debug : viewColumn g (column g)
-  -- windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewColumn g (column g)
+  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
   where
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
@@ -89,7 +89,7 @@ viewEnemy g (en:ens) =
       s = entityScale g
 
 viewLevel :: GameState -> Level -> [Picture]
-viewLevel g level = Map.foldl f [Blank] level
+viewLevel g = Map.foldl f [Blank]
   where
     f ac c = viewColumn g c <> ac
 
@@ -102,7 +102,7 @@ viewColumn g (MkColumn ((MkTile _ c _):ts)) = obstacle : viewColumn g (MkColumn 
     obstacle =
       case c of
         MkBlkChunk b    -> viewBlock2 g b
-        MkPltChunk p -> viewPlatform2 g p
+        MkPltChunk p    -> viewPlatform2 g p
     -- ent = 
     --   case s of
     --     MkPlayer    -> undefined

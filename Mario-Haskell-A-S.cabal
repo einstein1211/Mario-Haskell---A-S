@@ -73,6 +73,7 @@ executable Mario-Haskell-A-S
                         Controller.Controller
                         Controller.Physics
                         Controller.Entity
+                        Controller.LevelUpdate
                         View.View
                         View.Images
                         View.Scaling

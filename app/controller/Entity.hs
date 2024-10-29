@@ -7,36 +7,56 @@ import Model.Item
 import Model.Block
 import Model.Model
 import Model.Platform
+import Model.Level
 import Controller.Physics
 import View.Scaling
 
+import qualified Data.Map as Map
+
 entityUpdate :: GameState -> GameState
-entityUpdate g
-  | isScaled g =
-    g {players = filter isAlive (map (playerState es) (players g)),
-      enemies  = filter isAlive (enemies g),
-      items    = filter isAlive (items g),
-      blocks   = filter isAlive (blocks g)
-      }
-  | not (reScaled g) =
-    g {players  = map (scaleTo ws) (players g),
-      enemies   = map (scaleTo ws) (enemies g),
-      items     = map (scaleTo ws) (items g),
-      blocks    = map (scaleTo ws) (blocks g),
-      platforms = map (scaleTo ws) (platforms g),
-      isScaled  = True
-      }
-  | otherwise =
-    g {players  = map (scaleTo 4) (players g),
-      enemies   = map (scaleTo 4) (enemies g),
-      items     = map (scaleTo 4) (items g),
-      blocks    = map (scaleTo 4) (blocks g),
-      platforms = map (scaleTo 4) (platforms g),
-      isScaled  = True
-      }
+entityUpdate g =  scale $ windowShift $ noReScale g
     where
+      noReScale gs
+        | not (reScaled gs) =
+          gs {players  = map (scaleTo ws) (players g),
+            enemies   = map (scaleTo ws) (enemies g),
+            items     = map (scaleTo ws) (items g),
+            blocks    = map (scaleTo ws) (blocks g),
+            platforms = map (scaleTo ws) (platforms g),
+            isScaled  = True
+            }
+        | otherwise =
+          gs {players  = map (scaleTo es) (players g),
+            enemies   = map (scaleTo es) (enemies g),
+            items     = map (scaleTo es) (items g),
+            -- blocks    = map (scaleTo es) (blocks g),
+            -- platforms = map (scaleTo es) (platforms g),
+            isScaled  = True
+            }
+      windowShift gs
+        | not (windowShifted gs) =
+          gs {
+            -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
+            blocks = map (scaleTo es)$ Map.foldl (\ac c -> getEntries c++ac) [] (slidingWindow g),
+            -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
+            platforms = map (scaleTo es)$ Map.foldl (\ac c -> getEntries c++ac) [] (slidingWindow g),
+            windowShifted = True
+            -- ,isScaled = False
+            }
+        | otherwise = gs
+      scale gs
+        | isScaled gs =
+          gs {players = filter isAlive (map (playerState es) (players g)),
+            enemies  = filter isAlive (enemies g),
+            items    = filter isAlive (items g),
+            blocks   = filter isAlive (blocks g)
+            }
+        | otherwise = gs
       es = entityScale g
       ws = windowScale g
+      f t = changeGridIndex (MkGrid (x-1) y) t
+          where
+            (MkGrid x y) = getGridIndex t
 
 
 playerState :: Scaling -> Player -> Player

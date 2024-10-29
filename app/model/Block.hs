@@ -7,10 +7,14 @@ import Model.Platform
 blockhb :: Hitbox
 blockhb = MkHB 16 16
 
-instance GetPhysics Block where
+instance PhysicsFunctions Block where
     getHitbox b = pfHitbox $ bPlatform b
     isAlive b = bAlive b == ALIVE
     
+instance GridIndexFunctions Block where
+    changeGridIndex grd b@(MkBlock _ pl _ _) = b {bPlatform = pl {pfPos = grd}}
+    getGridIndex b = pfPos $ bPlatform b
+
 data Block = MkBlock
     {   bType :: BlockType
     ,   bPlatform :: Platform

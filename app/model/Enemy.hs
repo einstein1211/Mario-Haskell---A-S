@@ -5,7 +5,7 @@ import Model.Basic
 data EnemyAI = EASY | MEDIUM | HARD
     deriving (Show,Eq)
 
-instance GetPhysics Enemy where
+instance PhysicsFunctions Enemy where
     getHitbox e = htb $ physics $ eType e
     isAlive e = alive (eType e) == ALIVE
 

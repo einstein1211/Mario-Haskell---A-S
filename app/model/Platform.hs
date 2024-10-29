@@ -5,18 +5,22 @@ import Model.Basic
 data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
     deriving (Show,Eq)
 
-instance GetPhysics Platform where
+instance PhysicsFunctions Platform where
     getHitbox = pfHitbox
+
+instance GridIndexFunctions Platform where
+    changeGridIndex grd pl = pl {pfPos = grd}
+    getGridIndex = pfPos
+
+instance Show Platform where
+    show (MkPlatform pft _ (MkGrid x y)) = 
+        show pft ++ " (" ++ show x ++ "," ++ show y ++ ")"
 
 data Platform = MkPlatform
     {   pfType :: PlatformType
     ,   pfHitbox :: Hitbox
     ,   pfPos :: GridIndex
     } deriving (Eq)
-
-instance Show Platform where
-    show (MkPlatform pft _ (MkGrid x y)) = 
-        show pft ++ " (" ++ show x ++ "," ++ show y ++ ")"
 
 platformHB :: Hitbox
 platformHB = MkHB 16 16
