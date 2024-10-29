@@ -15,9 +15,9 @@ levelUpdate g
   | any forward (players g) && windowShifted g =
     -- trace (show (blocks g))
     -- trace (show (platforms g))
-    trace (show (levelKey g))
-    trace (show maxkey)
-    trace ("\n")
+    -- trace (show (levelKey g))
+    -- trace (show maxkey)
+    -- trace ("\n")
     g {
       -- slidingWindow = slideblocks $ slidingWindow g
       -- slidingWindow = slideblocks $ (Map.drop (lvlkey) (Map.take (lvlkey+1) lvl)) <> Map.drop 1 (slidingWindow g) 

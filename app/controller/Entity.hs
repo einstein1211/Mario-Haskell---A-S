@@ -11,6 +11,7 @@ import Model.Level
 import Controller.Physics
 import View.Scaling
 
+import Debug.Trace
 import qualified Data.Map as Map
 
 entityUpdate :: GameState -> GameState
@@ -22,8 +23,8 @@ entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
             players   = map (scaleTo es) (players gs),
             enemies   = map (scaleTo es) (enemies gs),
             items     = map (scaleTo es) (items gs),
-            blocks    = map (scaleTo es) (blocks gs),
-            platforms = map (scaleTo es) (platforms gs),
+            -- blocks    = map (scaleTo es) (blocks gs),
+            -- platforms = map (scaleTo es) (platforms gs),
             isScaled  = True
             }
         | otherwise =
@@ -39,7 +40,7 @@ entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
         | not (windowShifted gs) = 
           gs {
             -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
-            blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
+            -- blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
             -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
             platforms = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
             windowShifted = True
@@ -47,17 +48,12 @@ entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
             -- ,isScaled = False
             }
         | otherwise = gs
-          where
-            getBlocks :: Column -> [Block]
-            getBlocks (MkColumn tiles) = foldr f [] tiles
-              where
-                f (MkTile _ (MkBlkChunk b) _) ac =  b:ac
       filterAlive gs =
           gs {
             players = filter isAlive (map (playerState es) (players gs)),
             enemies  = filter isAlive (enemies gs),
-            items    = filter isAlive (items gs),
-            blocks   = filter isAlive (blocks gs)
+            items    = filter isAlive (items gs)
+            -- blocks   = filter isAlive (blocks gs)
             }
       es = entityScale g
       ws = windowScale g
@@ -82,18 +78,31 @@ playerState s p = p'
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
-    g {
-      players = map pve (map pvi (players g)),
-      enemies = map evp (enemies g),
-      items   = map ivp (items g),
-      blocks  = map bvp (blocks g)
-    }
-    where
-        pve p = foldr playerVsEnemy p (enemies g)
-        pvi p = p
-        evp e = foldr enemyVsPlayer e (players g)
-        ivp i = i
-        bvp b = foldr (blockVsPlayer (windowScale g)) b (players g)
+  g {
+    players = map pve (map pvi (players g)),
+    enemies = map evp (enemies g),
+    items   = map ivp (items g),
+    slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (bvp c) ac) Map.empty (slidingWindow g)
+    -- blocks  = map bvp (blocks g)
+  }
+  where
+    pve p = foldr playerVsEnemy p (enemies g)
+    pvi p = p
+    evp e = foldr enemyVsPlayer e (players g)
+    ivp i = i
+    -- bvp b = foldr (blockVsPlayer (windowScale g)) b (players g) 
+    bvp :: Column -> Column --Block vs Player interactions
+    bvp (MkColumn tiles) = MkColumn $ foldr f [] tiles
+      where
+        f (MkTile s (MkBlkChunk b) i) ac = (MkTile s (MkBlkChunk (bvp' b)) i) : ac
+        f t ac = t : ac 
+        bvp' b = foldr (blockVsPlayer g) b (players g)
+    -- bvp (MkColumn []) = MkColumn []
+    -- bvp (MkColumn (t@(MkTile s (MkBlkChunk b) i):ts)) = 
+    --   MkColumn $ (MkTile s (MkBlkChunk (foldr (blockVsPlayer (windowScale g)) b (players g))) i) : bvp (MkColumn ts)
+    -- bvp (MkColumn (t:ts)) = MkColumn $ t : bvp (MkColumn ts)
+      -- where
+      --   f c ac = (blockVsPlayer (windowScale g))
 
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
@@ -142,19 +151,21 @@ enemyVsPlayer p e = newe
 -- entityInteract :: Entity -> Entity -> Entity
 -- entityInteract
 
-blockVsPlayer :: Scaling -> Player -> Block -> Block
-blockVsPlayer scale p b = newb
+blockVsPlayer :: GameState -> Player -> Block -> Block
+blockVsPlayer g p b = 
+  -- (trace (show b)) newb
+  newb
   where
     newb
-      | intersects ppos phb bpos bhb = b'
-      | otherwise                    = b
+      | intersects ppos phb bpos bhb = (trace "block hit") b'
+      | otherwise                    =  b
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
     (ax,ay)         = acc pphys
     (vx,vy)         = vel pphys
-    bpos@(bx,by)    = gridPos (pfPos pf) scale
-    bhb@(MkHB _ bh) = pfHitbox pf
+    bpos@(bx,by)    = gridPos (pfPos pf) (windowScale g)
+    bhb@(MkHB _ bh) = hitboxScale (pfHitbox pf) (entityScale g)
     pf              = bPlatform b
     hidden = bType b == HIDDENBLOCK
     b'

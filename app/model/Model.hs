@@ -21,7 +21,7 @@ data GameState = MkGameState
     ,   players :: [Player]
     ,   enemies :: [Enemy]
     ,   items :: [Item]
-    ,   blocks :: [Block]
+    -- ,   blocks :: [Block]
     ,   platforms :: [Platform]
     ,   level :: Level
     ,   levelKey :: Int
@@ -47,7 +47,7 @@ initialState = MkGameState
     ,   players = [mario]
     ,   enemies = [goomba,goomba2]
     ,   items = []
-    ,   blocks = []
+    -- ,   blocks = []
     -- ,   blocks = [brick,qblock,empblock,hidblock]
     ,   platforms = []
     -- ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list

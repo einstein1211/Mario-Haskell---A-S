@@ -7,9 +7,12 @@ import Model.Enemy
 import Model.Block
 import Model.Item
 import Model.Platform
+import Model.Level
 import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 import Data.Bifunctor
+
+import qualified Data.Map as Map
 
 grav :: Float
 grav = -2000
@@ -129,9 +132,10 @@ intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =
       c8 = (x2-(w2/2),y2-(h2/2))
 
 blockCheck :: GameState -> Entity -> Entity
+-- blockCheck g e@(MkEntity _ p _) = Map.foldr f e {physics = p {gnd=AIRBORNE}} (slidingWindow g)
 blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
-    blks = blocks g
+    blks = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     blockCheck' :: Block -> Entity -> Entity
     blockCheck' (MkBlock typ plt _ _) (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}

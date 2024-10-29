@@ -31,8 +31,9 @@ viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
   -- windowToRatio wScale $ pictures $ debug : viewLevel g (level g) ++ viewPlayer g (players g)
   -- windowToRatio wScale $ pictures $ debug : viewColumn g (column g)
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g blocks
   where
+    blocks    = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
