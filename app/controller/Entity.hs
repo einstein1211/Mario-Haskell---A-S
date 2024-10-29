@@ -14,44 +14,51 @@ import View.Scaling
 import qualified Data.Map as Map
 
 entityUpdate :: GameState -> GameState
-entityUpdate g =  scale $ windowShift $ noReScale g
+entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
     where
       noReScale gs
         | not (reScaled gs) =
-          gs {players  = map (scaleTo ws) (players g),
-            enemies   = map (scaleTo ws) (enemies g),
-            items     = map (scaleTo ws) (items g),
-            blocks    = map (scaleTo ws) (blocks g),
-            platforms = map (scaleTo ws) (platforms g),
+          gs {
+            players   = map (scaleTo es) (players gs),
+            enemies   = map (scaleTo es) (enemies gs),
+            items     = map (scaleTo es) (items gs),
+            blocks    = map (scaleTo es) (blocks gs),
+            platforms = map (scaleTo es) (platforms gs),
             isScaled  = True
             }
         | otherwise =
-          gs {players  = map (scaleTo es) (players g),
-            enemies   = map (scaleTo es) (enemies g),
-            items     = map (scaleTo es) (items g),
-            -- blocks    = map (scaleTo es) (blocks g),
+          gs {
+            players   = map (scaleTo ws) (players gs),
+            enemies   = map (scaleTo ws) (enemies gs),
+            items     = map (scaleTo ws) (items gs),
+            -- blocks    = map (scaleTo es) (blocks gs),
             -- platforms = map (scaleTo es) (platforms g),
             isScaled  = True
             }
       windowShift gs
-        | not (windowShifted gs) =
+        | not (windowShifted gs) = 
           gs {
             -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
-            blocks = map (scaleTo es)$ Map.foldl (\ac c -> getEntries c++ac) [] (slidingWindow g),
+            blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
             -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
-            platforms = map (scaleTo es)$ Map.foldl (\ac c -> getEntries c++ac) [] (slidingWindow g),
+            platforms = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
             windowShifted = True
+
             -- ,isScaled = False
             }
         | otherwise = gs
-      scale gs
-        | isScaled gs =
-          gs {players = filter isAlive (map (playerState es) (players g)),
-            enemies  = filter isAlive (enemies g),
-            items    = filter isAlive (items g),
-            blocks   = filter isAlive (blocks g)
+          where
+            getBlocks :: Column -> [Block]
+            getBlocks (MkColumn tiles) = foldr f [] tiles
+              where
+                f (MkTile _ (MkBlkChunk b) _) ac =  b:ac
+      filterAlive gs =
+          gs {
+            players = filter isAlive (map (playerState es) (players gs)),
+            enemies  = filter isAlive (enemies gs),
+            items    = filter isAlive (items gs),
+            blocks   = filter isAlive (blocks gs)
             }
-        | otherwise = gs
       es = entityScale g
       ws = windowScale g
       f t = changeGridIndex (MkGrid (x-1) y) t

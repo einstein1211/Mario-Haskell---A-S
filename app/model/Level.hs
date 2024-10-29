@@ -33,8 +33,6 @@ instance Show Chunk where
 instance Show Tile where
     show (MkTile NoSpawn NoChunk _) = "()"
     show (MkTile spawn chunk i) = "("++show spawn++","++show chunk++") "++show i
-    
-
 
 class ColumnFunctions a where
     addToColumn :: a -> Column -> Column
@@ -110,14 +108,50 @@ pipeColumnL cn =
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETL platformHB (MkGrid cn 8))) 8)
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 9))) 9) (standardColumn cn)
 
+pipeColumnL2 :: ColumnNumber -> Column
+pipeColumnL2 cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETL platformHB (MkGrid cn 7))) 7)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 8))) 8)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 9))) 9) (standardColumn cn)
+
+pipeColumnL3 :: ColumnNumber -> Column
+pipeColumnL3 cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETL platformHB (MkGrid cn 6))) 6)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 7))) 7)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 8))) 8)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPEL platformHB (MkGrid cn 9))) 9) (standardColumn cn)
+
 pipeColumnR :: ColumnNumber -> Column
 pipeColumnR cn =
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETR platformHB (MkGrid cn 8))) 8)
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 9))) 9) (standardColumn cn)
 
+pipeColumnR2 :: ColumnNumber -> Column
+pipeColumnR2 cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETR platformHB (MkGrid cn 7))) 7)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 8))) 8)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 9))) 9) (standardColumn cn)
+
+pipeColumnR3 :: ColumnNumber -> Column
+pipeColumnR3 cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPETR platformHB (MkGrid cn 6))) 6)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 7))) 7)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 8))) 8)
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (MkGrid cn 9))) 9) (standardColumn cn)
+
 qColumn :: ColumnNumber -> Column
 qColumn cn =
-  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK blockhb (MkGrid cn 6)) ALIVE NOITEM)) 6) (standardColumn cn)
+--   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (MkGrid cn 5))) 5) $
+   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (MkGrid cn 6)) ALIVE NOITEM)) 6) (standardColumn cn)
+
+brickColumn :: ColumnNumber -> Column
+brickColumn cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (MkGrid cn 6)) ALIVE NOITEM)) 6) (standardColumn cn)
+
+brickColumn2 :: ColumnNumber -> Column
+brickColumn2 cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (MkGrid cn 2)) ALIVE NOITEM)) 2) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (MkGrid cn 6)) ALIVE NOITEM)) 6) (standardColumn cn)
 
 
 testLevel :: Level
@@ -125,9 +159,22 @@ testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
+      | x == 17 = f (17-1) (Map.insert 17 (qColumn 17) m)
+      | x == 21 = f (21-1) (Map.insert 21 (brickColumn 21) m)
       | x == 22 = f (22-1) (Map.insert 22 (qColumn 22) m)
-      | x == 20 = f (20-1) (Map.insert 20 (pipeColumnL 20) m)
-      | x == 21 = f (21-1) (Map.insert 21 (pipeColumnR 21) m)
+      | x == 23 = f (23-1) (Map.insert 23 (brickColumn2 23) m)
+      | x == 24 = f (24-1) (Map.insert 24 (qColumn 24) m)
+      | x == 25 = f (25-1) (Map.insert 25 (brickColumn 25) m)
+      | x == 29 = f (29-1) (Map.insert 29 (pipeColumnL 29) m)
+      | x == 30 = f (30-1) (Map.insert 30 (pipeColumnR 30) m)
+      | x == 39 = f (39-1) (Map.insert 39 (pipeColumnL2 39) m)
+      | x == 40 = f (40-1) (Map.insert 40 (pipeColumnR2 40) m)
+      | x == 47 = f (47-1) (Map.insert 47 (pipeColumnL3 47) m)
+      | x == 48 = f (48-1) (Map.insert 48 (pipeColumnR3 48) m)
+      | x == 58 = f (58-1) (Map.insert 58 (pipeColumnL3 58) m)
+      | x == 59 = f (59-1) (Map.insert 59 (pipeColumnR3 59) m)
+      | x == 70 = f (70-1) (Map.insert 70 emptyColumn m)
+      | x == 71 = f (71-1) (Map.insert 71 emptyColumn m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
 -- initialWindow :: [Column]

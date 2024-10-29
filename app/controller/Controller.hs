@@ -33,7 +33,7 @@ input :: Event -> GameState -> IO GameState
 --     return g
 input e gstate = 
   do 
-    traceIO $ show e
+    -- traceIO $ show e
     return $ (inputKey e . resizeEvent e) gstate
 -- input _ = return
 

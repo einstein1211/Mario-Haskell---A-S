@@ -13,9 +13,10 @@ import qualified Data.Map as Map
 levelUpdate :: GameState -> GameState
 levelUpdate g
   | any forward (players g) && windowShifted g =
-    
+    trace (show (blocks g))
+    trace (show (platforms g))
     g {
-      -- slidingWindow = slideblocks $ drop 1 (slidingWindow g) ++ [input],
+      -- slidingWindow = slideblocks $ slidingWindow g
       -- slidingWindow = slideblocks $ (Map.drop (lvlkey) (Map.take (lvlkey+1) lvl)) <> Map.drop 1 (slidingWindow g) 
       -- slidingWindow = slideblocks $ Map.insert (lvlkey+1) nextColumn $  Map.drop 1 (slidingWindow g)  --( <$ Map.drop (lvlkey) (Map.take (lvlkey+1)lvl))
       slidingWindow = slideblocks $ Map.take 20 $ Map.drop (levelKey g) lvl

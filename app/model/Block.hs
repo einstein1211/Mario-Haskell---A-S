@@ -33,7 +33,7 @@ brick = MkBlock
 qblock :: Block
 qblock = MkBlock
     {   bType = QBLOCK
-    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 3 6}
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 12 6}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
