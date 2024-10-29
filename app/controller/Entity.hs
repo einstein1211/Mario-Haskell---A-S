@@ -52,14 +52,21 @@ entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
           gs {
             players = filter isAlive (map (playerState es) (players gs)),
             enemies  = filter isAlive (enemies gs),
-            items    = filter isAlive (items gs)
+            items    = filter isAlive (items gs),
+            slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow g)
             -- blocks   = filter isAlive (blocks gs)
             }
+      checkAlive (MkColumn tiles) = MkColumn $ foldr f [] tiles
+        where
+          f t@(MkTile s (MkBlkChunk b) i) ac 
+            | isAlive b = t : ac
+            | otherwise = (MkTile s NoChunk i) : ac
+          f t ac = t : ac 
       es = entityScale g
       ws = windowScale g
-      f t = changeGridIndex (MkGrid (x-1) y) t
-          where
-            (MkGrid x y) = getGridIndex t
+      -- f t = changeGridIndex (MkGrid (x-1) y) t
+      --     where
+      --       (MkGrid x y) = getGridIndex t
 
 
 playerState :: Scaling -> Player -> Player
