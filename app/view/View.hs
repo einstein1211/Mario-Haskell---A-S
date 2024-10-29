@@ -6,6 +6,7 @@ import Model.Player
 import Model.Enemy
 import Model.Block
 import Model.Platform
+import Model.Item
 import View.Images
 import View.Scaling
 import Controller.Physics
@@ -38,9 +39,17 @@ imageToPicture img =
   where
     MkHB width height = hitbox img
 
+-- animateFrames :: [Image] -> Float -> Image
+animateFrames :: [Image] -> Float -> Image
+animateFrames frames time = 
+    let
+        frameCount = length frames
+        currentFrameIndex = floor (time * 10) `mod` frameCount
+    in frames !! currentFrameIndex
+
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
   where
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
@@ -66,28 +75,18 @@ viewPlayer g (pl:pls) =
     _     -> [blank]
     where
       phys = physics (pType pl)
-      img = case gnd phys of 
-        GROUNDED -> marioStand
-        -- RUNNING -> marioRun
-        _ -> marioJump
-      frames = [imageToPicture goombaWalk1, imageToPicture goombaWalk2]
-      bmp = uncurry translate (pos phys)$ Scale s s $ animateFrames frames $ time g -- imageToPicture img
+      img 
+        | not (isGrounded pl) = marioJump
+        | pMovement pl == WALKING = animateFrames framesWalking $ time g
+        | otherwise = marioStand
+      framesWalking = [mariof1, mariof2, mariof3]
+      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img 
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
       MkHB w h = htb $ physics $ pType pl
       s = entityScale g
-
-frames = [imageToPicture goombaWalk1, imageToPicture goombaWalk2]
-
-animateFrames :: [Picture] -> Float -> Picture
-animateFrames frames time = 
-    let
-        frameCount = length frames
-        currentFrameIndex = floor (time * 10) `mod` frameCount
-    in frames !! currentFrameIndex
-
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
@@ -110,6 +109,51 @@ viewEnemy g (en:ens) =
       (x,y) = pos phys
       MkHB w h = htb $ physics $ eType en
       s = entityScale g
+
+-- viewItem :: GameState -> [Item] -> [Picture]
+-- viewItem _ [] = [blank]
+-- viewItem g (it:its) = bmp : viewItem g its
+--   where
+--       --     img 
+--       --   | not (isGrounded pl) = imageToPicture marioJump
+--       --   | pMovement pl == WALKING = animateFrames framesWalking $ time g
+--       --   | otherwise = imageToPicture marioStand
+--       -- framesWalking = [imageToPicture mariof1, imageToPicture mariof2, imageToPicture mariof3]
+--       -- bmp = uncurry translate (pos phys)$ Scale s s img 
+--     img =
+--       case entity (iType it) of
+--         MkItemType COIN     -> coin1f1
+--         MkItemType MUSHROOM -> mushroom1   
+--         _    -> undefined     
+--     framesCoin = [imageToPicture coin1f1, imageToPicture coin1f2, imageToPicture coin1f3]    
+--     phys = physics (iType it) 
+--     bmp = 
+--       case entity (iType it) of
+--         MkItemType COIN -> translate x y $ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+--         _               -> uncurry translate (pos (physics (iType it))) $ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+--     (x,y) = gridPos (iPos it) ws
+--     (MkHB width height) = hitbox img
+--     s = entityScale g
+--     ws = windowScale g
+
+viewItem :: GameState -> [Item] -> [Picture]
+viewItem _ [] = [blank]
+viewItem g (it:its) =
+  case entity (iType it) of
+    MkItemType COIN -> bmp : viewItem g its
+    _   -> [blank]
+    where
+      phys = physics (iType it)
+      img = animateFrames framesCoin $ time g
+      framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
+      bmp =
+        case entity (iType it) of
+        MkItemType COIN -> translate x y $ Scale s s $ imageToPicture img
+        _               -> uncurry translate (pos (physics (iType it))) $ Scale s s $ imageToPicture img
+      (x,y) = gridPos (iPos it) ws
+      (MkHB width height) = hitbox img
+      s = entityScale g
+      ws = windowScale g
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
