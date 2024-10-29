@@ -138,13 +138,15 @@ viewEnemy g (en:ens) =
 
 viewItem :: GameState -> [Item] -> [Picture]
 viewItem _ [] = [blank]
-viewItem g (it:its) =
-  case entity (iType it) of
-    MkItemType COIN -> bmp : viewItem g its
-    _   -> [blank]
+viewItem g (it:its) = bmp : viewItem g its
     where
       phys = physics (iType it)
-      img = animateFrames framesCoin $ time g
+      -- img = animateFrames framesCoin $ time g
+      img =
+        case entity (iType it) of
+          MkItemType COIN     -> animateFrames framesCoin $ time g
+          MkItemType MUSHROOM -> mushroom1
+          _    -> undefined     
       framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
       bmp =
         case entity (iType it) of
