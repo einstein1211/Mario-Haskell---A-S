@@ -40,7 +40,7 @@ imageToPicture img =
   where
     MkHB width height = hitbox img
 
--- takes a list of frames, a rate (for animation speed) and time.
+-- takes a list of frames, a number (higher number = faster animation) and time.
 animateFrames :: [Image] -> Float -> Float -> Image
 animateFrames frames rate time = 
     let
