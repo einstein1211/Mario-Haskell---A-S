@@ -51,7 +51,7 @@ playerState s p = p'
     p'
       | not grounded  = scaleTo s p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 14 16)}}}
       | vx==0         = scaleTo s p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
-      | otherwise     = scaleTo s p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+      | otherwise     = scaleTo s p {pMovement = WALKING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
@@ -63,10 +63,10 @@ entityInteractions s g =
     }
     where
         pve p = foldr playerVsEnemy p (enemies g)
-        pvi p = p
         evp e = foldr enemyVsPlayer e (players g)
-        ivp i = i
-        bvp b = foldr (blockVsPlayer (entityScale g)) b (players g)
+        pvi p = p --playerVsItem (mushroom makes mario big)
+        ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
+        bvp b = foldr (blockVsPlayer (windowScale g)) b (players g)
 
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
@@ -112,8 +112,26 @@ enemyVsPlayer p e = newe
       | abs (px-ex) < abs (py-ey) && (py > ey) = e {eType = ent {alive = DEAD}}
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
--- entityInteract :: Entity -> Entity -> Entity
--- entityInteract
+
+-- playerVsItem :: Item -> Player -> Player
+-- playerVsItem i p = newp
+
+itemVsPlayer :: Scaling -> Player -> Item -> Item
+itemVsPlayer s p i = newi
+  where
+    newi
+      | intersects ipos ihb ppos phb = i {iType = ent {alive = DEAD}}
+      | otherwise                    = i
+    ppos@(px,py)    = pos pphys
+    phb@(MkHB _ ph) = htb pphys
+    pphys           = physics (pType p)
+    ipos@(ix,iy)    = 
+      case entity (iType i) of
+        MkItemType COIN -> gridPos (iPos i) s
+        _               -> pos iphys
+    ihb@(MkHB _ ih) = htb iphys
+    iphys           = physics ent
+    ent             = iType i
 
 blockVsPlayer :: Scaling -> Player -> Block -> Block
 blockVsPlayer scale p b = newb
@@ -132,7 +150,7 @@ blockVsPlayer scale p b = newb
     hidden = bType b == HIDDENBLOCK
     b'
       | abs (px-bx) < abs (py-by) && (py < by) && hidden && vy > 0 = hit
-      | abs (px-bx) < abs (py-by) && (py < by) && not hidden= hit
+      | abs (px-bx) < abs (py-by) && (py < by) && not hidden = hit
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =
