@@ -75,12 +75,18 @@ viewPlayer g (pl:pls) =
     MkPlayerType MARIO -> bmp : hbox : viewPlayer g pls
     _     -> [blank]
     where
+      (stand, walk, jump, crouch) =
+        case pPower pl of
+          SMALL -> (marioStand, [mariof1, mariof2, mariof3], marioJump, marioStand)
+          BIG -> (superMarioStand, [superMariof1, superMariof2, superMariof3], superMarioJump, superMarioCrouch)
+          -- FIRE ->
       phys = physics (pType pl)
       img
-        | not (isGrounded pl) = marioJump
-        | pMovement pl == WALKING = animateFrames framesWalking 10 $ time g
-        | otherwise = marioStand
-      framesWalking = [mariof1, mariof2, mariof3]
+        | not (isGrounded pl) = jump
+        | pMovement pl == WALKING = animateFrames walk 10 $ time g
+        | pMovement pl == CROUCHING = crouch
+        | otherwise = stand
+      -- framesWalking = [mariof1, mariof2, mariof3]
       bmp
         | dir phys == LEFT = uncurry translate (pos phys)$ flipPicture $ Scale s s $ imageToPicture img
         | otherwise        = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
