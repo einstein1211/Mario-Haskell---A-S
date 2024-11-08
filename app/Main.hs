@@ -24,4 +24,38 @@ main = playIO window
 
 -- images :: [String]
 -- images = []
-    
+
+-- animated sprites unproven method 1
+-- Load your frames as images
+--     do
+--     frame1 <- loadBMP "frame1.bmp"
+--     frame2 <- loadBMP "frame2.bmp"
+--     let frames = [frame1, frame2]
+--     animate (InWindow "Sprite Animation" (800, 600) (100, 100)) white (frameRenderer frames)
+
+-- frameRenderer :: [Picture] -> Float -> Picture
+-- frameRenderer frames time =
+--     let frameCount = length frames
+--         currentFrame = frames !! (floor (time * 10) `mod` frameCount)
+--     in currentFrame
+
+-- animated sprites unproven method 2
+-- -- Display the animation by looping through frames
+-- animateFrames :: [Picture] -> Float -> Picture
+-- animateFrames frames time = 
+--     let
+--         frameCount = length frames
+--         currentFrameIndex = floor (time * 10) `mod` frameCount
+--     in frames !! currentFrameIndex
+
+-- main :: IO ()
+-- main = do
+--     frames <- loadFrames ["frame1.bmp", "frame2.bmp", "frame3.bmp", "frame4.bmp"] -- Load your frames here
+--     animate $ animateFrames frames
+
+animateFrames :: [Picture] -> Float -> Picture
+animateFrames frames time = 
+    let
+        frameCount = length frames
+        currentFrameIndex = floor (time * 10) `mod` frameCount
+    in frames !! currentFrameIndex

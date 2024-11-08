@@ -51,7 +51,7 @@ playerState s p = p'
     p'
       | not grounded  = scaleTo s p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 14 16)}}}
       | vx==0         = scaleTo s p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
-      | otherwise     = scaleTo s p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+      | otherwise     = scaleTo s p {pMovement = WALKING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
@@ -65,7 +65,7 @@ entityInteractions s g =
         pve p = foldr playerVsEnemy p (enemies g)
         evp e = foldr enemyVsPlayer e (players g)
         pvi p = p --playerVsItem (mushroom makes mario big)
-        ivp i = foldr itemVsPlayer i (players g)
+        ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
         bvp b = foldr (blockVsPlayer (windowScale g)) b (players g)
 
 playerVsEnemy :: Enemy -> Player -> Player
@@ -116,8 +116,8 @@ enemyVsPlayer p e = newe
 -- playerVsItem :: Item -> Player -> Player
 -- playerVsItem i p = newp
 
-itemVsPlayer :: Player -> Item -> Item
-itemVsPlayer p i = newi
+itemVsPlayer :: Scaling -> Player -> Item -> Item
+itemVsPlayer s p i = newi
   where
     newi
       | intersects ipos ihb ppos phb = i {iType = ent {alive = DEAD}}
@@ -127,7 +127,7 @@ itemVsPlayer p i = newi
     pphys           = physics (pType p)
     ipos@(ix,iy)    = 
       case entity (iType i) of
-        MkItemType COIN -> gridPos $ iPos i
+        MkItemType COIN -> gridPos (iPos i) s
         _               -> pos iphys
     ihb@(MkHB _ ih) = htb iphys
     iphys           = physics ent

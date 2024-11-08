@@ -12,6 +12,10 @@ import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
 
+import Graphics.Gloss.Interface.Pure.Animate
+import View.Images (mushroom1, goombaWalk1)
+
+
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
 --   color c $ polygon $ locup p pt
@@ -25,9 +29,28 @@ view g = do
   -- putStrLn $ show $ pressedKeys g
   (return . viewPure) g
 
+imageToPicture :: Image -> Picture
+imageToPicture img =
+  Bitmap $ bitmapDataOfByteString
+    (round width)
+    (round height)
+    (BitmapFormat BottomToTop PxRGBA)
+    (bytestring img)
+    False
+  where
+    MkHB width height = hitbox img
+
+-- takes a list of frames, a number (higher number = faster animation) and time.
+animateFrames :: [Image] -> Float -> Float -> Image
+animateFrames frames rate time = 
+    let
+        frameCount = length frames
+        currentFrameIndex = floor (time * rate) `mod` frameCount
+    in frames !! currentFrameIndex
+
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g)
+  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
   where
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
@@ -53,9 +76,12 @@ viewPlayer g (pl:pls) =
     _     -> [blank]
     where
       phys = physics (pType pl)
-      img = if gnd phys == GROUNDED then marioStand else marioJump
-      bmp = uncurry translate (pos phys)$ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      MkHB width height = hitbox img
+      img 
+        | not (isGrounded pl) = marioJump
+        | pMovement pl == WALKING = animateFrames framesWalking 10 $ time g
+        | otherwise = marioStand
+      framesWalking = [mariof1, mariof2, mariof3]
+      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img 
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
@@ -73,12 +99,12 @@ viewEnemy g (en:ens) =
     where
       -- FIXME: DA HEK IS GOING ON HERE 
       phys = physics (eType en)
-      img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
+      -- img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
+      img = animateFrames framesGoomba 5 $ time g
+      framesGoomba = [goombaWalk1, goombaWalk2]
       bmp
-        | gnd phys == GROUNDED = translate x y $ Scale s s bmp'
-        | otherwise = translate x y $ Scale s s $ rotate 180 bmp'
-      bmp' =  Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-      MkHB width height = hitbox img
+        | gnd phys == GROUNDED = translate x y $ Scale s s $ imageToPicture img
+        | otherwise = translate x y $ Scale s s $ rotate 180 $ imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
@@ -89,20 +115,22 @@ viewEnemy g (en:ens) =
 viewItem :: GameState -> [Item] -> [Picture]
 viewItem _ [] = [blank]
 viewItem g (it:its) = bmp : viewItem g its
-  where
-    img =
-      case entity (iType it) of
-        MkItemType COIN     -> coin1f1
-        MkItemType MUSHROOM -> mushroom1   
-        _    -> undefined         
-    phys = physics (iType it) 
-    bmp = 
-      case entity (iType it) of
-        MkItemType COIN -> uncurry translate (gridPos (iPos it)) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-        _               -> uncurry translate (pos (physics (iType it))) $ Scale scaling scaling $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
-    (MkHB width height) = hitbox img
-
-    -- img = mushroom ?
+    where
+      phys = physics (iType it)
+      img =
+        case entity (iType it) of
+          MkItemType COIN     -> animateFrames framesCoin 10 $ time g
+          MkItemType MUSHROOM -> mushroom1
+          _    -> undefined     
+      framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
+      bmp =
+        case entity (iType it) of
+        MkItemType COIN -> translate x y $ Scale s s $ imageToPicture img
+        _               -> uncurry translate (pos (physics (iType it))) $ Scale s s $ imageToPicture img
+      (x,y) = gridPos (iPos it) ws
+      (MkHB width height) = hitbox img
+      s = entityScale g
+      ws = windowScale g
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
@@ -117,8 +145,7 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
         DIRT    -> dirt1
         STAIR   -> stair1
         BLOCK   -> noimg
-    MkHB width height = hitbox img
-    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp | img /= noimg = translate x y $ Scale es es $ imageToPicture img
         | otherwise = blank
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
@@ -138,8 +165,7 @@ viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks
         QBLOCK      -> question1f1
         EMPTYBLOCK  -> emptyblock1
         HIDDENBLOCK -> noimg
-    MkHB width height = hitbox img
-    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp | img /= noimg = translate x y $ Scale es es $ imageToPicture img
         | otherwise = blank
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]

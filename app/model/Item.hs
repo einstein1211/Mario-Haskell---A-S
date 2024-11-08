@@ -38,7 +38,7 @@ initPhysicsCoin = MkPhysics
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB (10*scaling) (14*scaling)    
+    ,   htb = MkHB 10 14   
     ,   dir = RIGHT
     }
 
@@ -49,6 +49,6 @@ initPhysicsMushroom = MkPhysics
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
-    ,   htb = MkHB (14*scaling) (16*scaling)    
+    ,   htb = MkHB 14 16   
     ,   dir = RIGHT
     }

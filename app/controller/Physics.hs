@@ -43,6 +43,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     y'  = y   + vy*s
     enttype = entity e
     vx' --BUG: Makes you get stuck on walls 
+      | grounded && vx<5 && vx>(-5) = 0 + ax*s 
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
       | otherwise                   = vx + ax*s
@@ -96,7 +97,9 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | not (up||space)   = 0
       | otherwise         = jmpt
     movement
-      | down = CROUCHED
+      | left = WALKING
+      | right = WALKING
+      | down = CROUCHING -- ?
       | otherwise = pMovement pl
 
 maxSpdCheck :: Entity -> Entity

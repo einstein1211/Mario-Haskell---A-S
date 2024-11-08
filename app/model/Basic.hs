@@ -38,6 +38,7 @@ class GetPhysics a where
     getVel :: a -> Velocity
     getAcc :: a -> Acceleration
     isAlive :: a -> Bool
+    isGrounded :: a -> Bool
 
 data Physics = MkPhysics
     {   pos :: Point
