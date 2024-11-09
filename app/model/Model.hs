@@ -29,6 +29,7 @@ data GameState = MkGameState
     ,   entityScale :: Scaling
     ,   isScaled :: Bool
     ,   reScaled :: Bool
+    ,   isPaused :: Bool
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -50,4 +51,5 @@ initialState = MkGameState
     ,   entityScale = 4
     ,   isScaled = False
     ,   reScaled = False
+    ,   isPaused = False
     }
