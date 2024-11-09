@@ -1,5 +1,6 @@
 module Model.Model where
 
+import Model.Basic
 import Model.Player
 import Model.Enemy
 import Model.Item
@@ -25,8 +26,10 @@ data GameState = MkGameState
     ,   platforms :: [Platform]
     ,   level :: Level
     ,   levelKey :: Int
+    ,   oldLevelKey :: Int
     -- ,   slidingWindow :: [Column]
     ,   slidingWindow :: Level
+    ,   xOffset :: Float
     -- ,   column :: Column
     ,   pressedKeys :: [SpecialKey]
     ,   debugMode :: Bool
@@ -53,12 +56,14 @@ initialState = MkGameState
     -- ,   platforms = [stair,stair2,pipe1,pipe2,pipe3,pipe4] ++ makeFloor --TODO: replace with mapped column list
     ,   level = testLevel
     -- ,   levelKey = 1
-    ,   levelKey = 18
+    ,   levelKey = 17
+    ,   oldLevelKey = 17
     ,   slidingWindow = initialWindow
+    ,   xOffset = 0
     -- ,   column = testColumn
     ,   pressedKeys = []
     ,   debugMode = False
-    ,   windowRes = (1024,768)
+    ,   windowRes = res
     ,   windowScale = 1
     ,   entityScale = 4
     ,   isScaled = False

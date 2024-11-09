@@ -18,7 +18,7 @@ instance PhysicsFunctions Player where
       where
         ent = pType p
         pphys = physics ent
-        ppos@(px,py) = getPos p
+        (px,py) = getPos p
 
 -- | Data describing players in Game 
 data Player = MkPlayer

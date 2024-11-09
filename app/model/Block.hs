@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Block where
 
 import Model.Basic
@@ -8,12 +9,15 @@ blockhb :: Hitbox
 blockhb = MkHB 16 16
 
 instance PhysicsFunctions Block where
+    getPos b = pfPos $ bPlatform b
     getHitbox b = pfHitbox $ bPlatform b
     isAlive b = bAlive b == ALIVE
-    
-instance GridIndexFunctions Block where
-    changeGridIndex grd b@(MkBlock _ pl _ _) = b {bPlatform = pl {pfPos = grd}}
-    getGridIndex b = pfPos $ bPlatform b
+    moveBy :: (Float, Float) -> Block -> Block
+    moveBy offset b@(MkBlock _ p _ _) = b{bPlatform = moveBy offset p}
+
+-- instance GridIndexFunctions Block where
+--     changeGridIndex grd b@(MkBlock _ pl _ _) = b {bPlatform = pl {pfPos = grd}}
+--     getGridIndex b = pfPos $ bPlatform b
 
 data Block = MkBlock
     {   bType :: BlockType
@@ -25,7 +29,7 @@ data Block = MkBlock
 brick :: Block
 brick = MkBlock
     {   bType = BRICK
-    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 2 6}
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (2,6) 4}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
@@ -33,7 +37,7 @@ brick = MkBlock
 qblock :: Block
 qblock = MkBlock
     {   bType = QBLOCK
-    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 12 6}
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (12,6) 4}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
@@ -41,7 +45,7 @@ qblock = MkBlock
 empblock :: Block
 empblock = MkBlock
     {   bType = EMPTYBLOCK
-    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 4 6}
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (4,6) 4}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }
@@ -49,7 +53,7 @@ empblock = MkBlock
 hidblock :: Block
 hidblock = MkBlock
     {   bType = HIDDENBLOCK
-    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = MkGrid 5 6}
+    ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (5,6) 4}
     ,   bAlive = ALIVE
     ,   bContents = NOITEM
     }

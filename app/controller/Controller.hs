@@ -1,5 +1,6 @@
 module Controller.Controller where
 
+import Model.Basic
 import Model.Model
 import Model.Player
 import View.Scaling
@@ -20,7 +21,7 @@ step secs gstate = do
   -- putStrLn "\n"
   -- print (players gstate)
   -- print (map pMovement (players gstate))
-  return $ entityInteractions secs $ applyPhysics secs $ levelUpdate $ entityUpdate gstate {time = time gstate + secs}
+  return $ entityInteractions secs $ applyPhysics secs $ levelUpdate secs $ entityUpdate gstate {time = time gstate + secs}
 
 -- gameChange :: GameState -> GameState
 -- gameChange g = 

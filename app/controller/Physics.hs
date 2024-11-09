@@ -45,6 +45,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     x'  = x   + vx*s
     y'  = y   + vy*s
     vx' --BUG: Makes you get stuck on walls 
+      | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
       | otherwise                   = vx + ax*s
@@ -69,6 +70,7 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
     none = not (space||up||left||right)
     phys  = physics typ
     grounded = gnd phys == GROUNDED
+    (x,y) = getPos pl
     (ax,ay) = acc phys
     movl
       | grounded&&left     = -300
@@ -82,7 +84,9 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | grounded&&jmpt>0     = (-grav)
       | not grounded&&jmpt>0 = 0.5*(-grav)
       | otherwise            = 0
-    phys' = phys {acc = acc',mxv = mv'}
+    phys' = phys {acc = acc',mxv = mv',pos = (x',y)}
+    x' = min x xThresHold
+    xThresHold = fromIntegral (fst res) * 0.125 * windowScale g
     mv' = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
@@ -142,7 +146,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
+        ppos@(px,py) = pfPos plt
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -164,14 +168,14 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
 platformCheck :: GameState -> Entity -> Entity
 platformCheck g e = foldr platformCheck' e plats
   where
-    plats = platforms g
+    plats = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     platformCheck' ::  Platform -> Entity -> Entity
     platformCheck' plt (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
+        ppos@(px,py) = pfPos plt
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -203,20 +207,4 @@ collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy)
       | l < fst lowbound = x+1
       | otherwise = x
 
-blksz :: Scaling -> Float
-blksz s = 64*s
-
-gridPos :: GridIndex -> Scaling -> Point
-gridPos (MkGrid x y) s = translate00 (fromIntegral x*blk+(blk/2),-(fromIntegral y*blk)-(blk/2)) s
-  where
-    blk = blksz s
-
-translate00 :: Point -> Scaling -> Point
-translate00 (x,y) s = (x-(fst uppbound *s),y+(snd uppbound *s))
-
-uppbound :: (Float,Float)
-uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
-
-lowbound :: (Float,Float)
-lowbound = (-fst uppbound,-snd uppbound)
 -- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)

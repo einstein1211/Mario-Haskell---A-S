@@ -15,58 +15,58 @@ import Debug.Trace
 import qualified Data.Map as Map
 
 entityUpdate :: GameState -> GameState
-entityUpdate g =  filterAlive $ windowShift g-- $ noReScale g
-    where
-      noReScale gs
-        | not (reScaled gs) =
-          gs {
-            players   = map (scaleTo es) (players gs),
-            enemies   = map (scaleTo es) (enemies gs),
-            items     = map (scaleTo es) (items gs),
-            -- blocks    = map (scaleTo es) (blocks gs),
-            -- platforms = map (scaleTo es) (platforms gs),
-            isScaled  = True
-            }
-        | otherwise =
-          gs {
-            players   = map (scaleTo ws) (players gs),
-            enemies   = map (scaleTo ws) (enemies gs),
-            items     = map (scaleTo ws) (items gs),
-            -- blocks    = map (scaleTo es) (blocks gs),
-            -- platforms = map (scaleTo es) (platforms g),
-            isScaled  = True
-            }
-      windowShift gs
-        | not (windowShifted gs) = 
-          gs {
-            -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
-            -- blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
-            -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
-            platforms = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
-            windowShifted = True
+entityUpdate g =  filterAlive g -- $ windowShift g -- $ noReScale g
+  where
+    noReScale gs
+      | not (reScaled gs) =
+        gs {
+          players   = map (scaleTo es) (players gs),
+          enemies   = map (scaleTo es) (enemies gs),
+          items     = map (scaleTo es) (items gs),
+          -- blocks    = map (scaleTo es) (blocks gs),
+          -- platforms = map (scaleTo es) (platforms gs),
+          isScaled  = True
+          }
+      | otherwise =
+        gs {
+          players   = map (scaleTo ws) (players gs),
+          enemies   = map (scaleTo ws) (enemies gs),
+          items     = map (scaleTo ws) (items gs),
+          -- blocks    = map (scaleTo es) (blocks gs),
+          -- platforms = map (scaleTo es) (platforms g),
+          isScaled  = True
+          }
+    windowShift gs
+      | not (windowShifted gs) =
+        gs {
+          -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
+          -- blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
+          -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
+          -- platforms = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
+          windowShifted = True
 
-            -- ,isScaled = False
-            }
-        | otherwise = gs
-      filterAlive gs =
-          gs {
-            players = filter isAlive (map (playerState es) (players gs)),
-            enemies  = filter isAlive (enemies gs),
-            items    = filter isAlive (items gs),
-            slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow g)
-            -- blocks   = filter isAlive (blocks gs)
-            }
-      checkAlive (MkColumn tiles) = MkColumn $ foldr f [] tiles
-        where
-          f t@(MkTile s (MkBlkChunk b) i) ac 
-            | isAlive b = t : ac
-            | otherwise = (MkTile s NoChunk i) : ac
-          f t ac = t : ac 
-      es = entityScale g
-      ws = windowScale g
-      -- f t = changeGridIndex (MkGrid (x-1) y) t
-      --     where
-      --       (MkGrid x y) = getGridIndex t
+          -- ,isScaled = False
+          }
+      | otherwise = gs
+    filterAlive gs =
+      gs {
+        players = filter isAlive (map (playerState es) (players gs)),
+        enemies  = filter isAlive (enemies gs),
+        items    = filter isAlive (items gs),
+        slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow g)
+        -- blocks   = filter isAlive (blocks gs)
+        }
+    checkAlive (MkColumn tiles) = MkColumn $ foldr f [] tiles
+      where
+        f t@(MkTile s (MkBlkChunk b)) ac
+          | isAlive b = t : ac
+          | otherwise = MkTile s NoChunk : ac
+        f t ac = t : ac
+    es = entityScale g
+    ws = windowScale g
+    -- f t = changeGridIndex (MkGrid (x-1) y) t
+    --     where
+    --       (MkGrid x y) = getGridIndex t
 
 
 playerState :: Scaling -> Player -> Player
@@ -101,8 +101,8 @@ entityInteractions s g =
     bvp :: Column -> Column --Block vs Player interactions
     bvp (MkColumn tiles) = MkColumn $ foldr f [] tiles
       where
-        f (MkTile s (MkBlkChunk b) i) ac = (MkTile s (MkBlkChunk (bvp' b)) i) : ac
-        f t ac = t : ac 
+        f (MkTile s (MkBlkChunk b)) ac = MkTile s (MkBlkChunk (bvp' b)) : ac
+        f t ac = t : ac
         bvp' b = foldr (blockVsPlayer g) b (players g)
     -- bvp (MkColumn []) = MkColumn []
     -- bvp (MkColumn (t@(MkTile s (MkBlkChunk b) i):ts)) = 
@@ -159,7 +159,7 @@ enemyVsPlayer p e = newe
 -- entityInteract
 
 blockVsPlayer :: GameState -> Player -> Block -> Block
-blockVsPlayer g p b = 
+blockVsPlayer g p b =
   -- (trace (show b)) newb
   newb
   where
@@ -171,7 +171,7 @@ blockVsPlayer g p b =
     pphys           = physics (pType p)
     (ax,ay)         = acc pphys
     (vx,vy)         = vel pphys
-    bpos@(bx,by)    = gridPos (pfPos pf) (windowScale g)
+    bpos@(bx,by)    = pfPos pf
     bhb@(MkHB _ bh) = hitboxScale (pfHitbox pf) (entityScale g)
     pf              = bPlatform b
     hidden = bType b == HIDDENBLOCK

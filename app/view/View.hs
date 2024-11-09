@@ -14,6 +14,8 @@ import Graphics.Gloss
 
 import qualified Data.Map as Map
 
+import Debug.Trace
+
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
 --   color c $ polygon $ locup p pt
@@ -31,9 +33,10 @@ viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale} =
   -- windowToRatio wScale $ pictures $ debug : viewLevel g (level g) ++ viewPlayer g (players g)
   -- windowToRatio wScale $ pictures $ debug : viewColumn g (column g)
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g blocks
+  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g platfrms ++ viewBlock g blocks
   where
     blocks    = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
+    platfrms  = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
@@ -57,7 +60,7 @@ viewPlayer g (pl:pls) =
     where
       phys = physics (pType pl)
       img = if gnd phys == GROUNDED then marioStand else marioJump
-      bmp = uncurry translate (pos phys)$ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+      bmp = translate x y $ Scale s s $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
       MkHB width height = hitbox img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
@@ -97,8 +100,8 @@ viewLevel g = Map.foldl f [Blank]
 viewColumn :: GameState -> Column -> [Picture]
 viewColumn _ (MkColumn []) = [blank]
 -- viewColumn g (MkColumn ((MkTile s NoChunk grid):ts)) = ent : viewColumn g (MkColumn ts)
-viewColumn g (MkColumn ((MkTile _ NoChunk _):ts)) = blank : viewColumn g (MkColumn ts)
-viewColumn g (MkColumn ((MkTile _ c _):ts)) = obstacle : viewColumn g (MkColumn ts)
+viewColumn g (MkColumn ((MkTile _ NoChunk):ts)) = blank : viewColumn g (MkColumn ts)
+viewColumn g (MkColumn ((MkTile _ c):ts)) = obstacle : viewColumn g (MkColumn ts)
   where
     obstacle =
       case c of
@@ -109,7 +112,7 @@ viewColumn g (MkColumn ((MkTile _ c _):ts)) = obstacle : viewColumn g (MkColumn 
     --     MkPlayer    -> undefined
     --     MkEnemy     -> undefined
     --     MkItem      -> undefined
-    
+
 
 
 viewPlatform :: GameState -> [Platform] -> [Picture]
@@ -131,7 +134,7 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos plt) ws
+    (x,y) = pfPos plt
     MkHB w h = pfHitbox plt
     es = entityScale g
     ws = windowScale g
@@ -154,7 +157,7 @@ viewPlatform2 g plt = bmp <> hbox
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos plt) ws
+    (x,y) = pfPos plt
     MkHB w h = pfHitbox plt
     es = entityScale g
     ws = windowScale g
@@ -175,7 +178,7 @@ viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos (bPlatform blck)) ws
+    (x,y) = pfPos (bPlatform blck)
     MkHB w h = pfHitbox (bPlatform blck)
     es = entityScale g
     ws = windowScale g
@@ -190,12 +193,12 @@ viewBlock2 g blck = bmp <> hbox
         EMPTYBLOCK  -> emptyblock1
         HIDDENBLOCK -> noimg
     MkHB width height = hitbox img
-    bmp | img /= noimg = translate x y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
+    bmp | img /= noimg = translate (x-xOffset g) y $ Scale es es $ Bitmap $ bitmapDataOfByteString (round width) (round height) (BitmapFormat BottomToTop PxRGBA) (bytestring img) False
         | otherwise = blank
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos (bPlatform blck)) ws
+    (x,y) = pfPos (bPlatform blck)
     MkHB w h = pfHitbox (bPlatform blck)
     es = entityScale g
     ws = windowScale g
