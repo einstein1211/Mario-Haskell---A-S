@@ -12,23 +12,38 @@ import Graphics.Gloss.Interface.IO.Game
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
+--original function
+-- step :: Float -> GameState -> IO GameState
+-- step secs gstate = do
+--   -- print (players gstate)
+--   -- print (map pMovement (players gstate))
+--   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
+
 step :: Float -> GameState -> IO GameState
-step secs gstate = do
-  -- print (players gstate)
-  -- print (map pMovement (players gstate))
-  return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
+step secs gstate
+  | isPaused gstate = return gstate  -- Don't update if paused
+  | otherwise = return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate { time = time gstate + secs }
+
+handlePause :: Event -> GameState -> GameState
+handlePause (EventKey (Char 'p') Down _ _) gstate = 
+  gstate { isPaused = not (isPaused gstate) }
+handlePause _ gstate = gstate
 
 -- gameChange :: GameState -> GameState
 -- gameChange g = 
 
--- | Handle user input
+--original function
+-- -- | Handle user input
+-- input :: Event -> GameState -> IO GameState
+-- -- input e g =
+-- --   do
+-- --     putStrLn $ show e
+-- --     return g
+-- input e gstate = return $ (inputKey e . resizeEvent e) gstate
+-- -- input _ = return
+
 input :: Event -> GameState -> IO GameState
--- input e g =
---   do
---     putStrLn $ show e
---     return g
-input e gstate = return $ (inputKey e . resizeEvent e) gstate
--- input _ = return
+input e gstate = return $ (handlePause e . inputKey e . resizeEvent e) gstate
 
 resizeEvent :: Event -> GameState -> GameState
 resizeEvent (EventResize (x,y)) g = windowScaling (x,y) g
@@ -61,4 +76,5 @@ playerMove (EventKey (SpecialKey key) state _ _) g
   | otherwise     = g {pressedKeys = filter (/=key) pks}
     where
       pks = pressedKeys g
+
 
