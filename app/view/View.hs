@@ -12,9 +12,6 @@ import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
 
-import Graphics.Gloss.Interface.Pure.Animate
-import View.Images (mushroom1, goombaWalk1)
-
 
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
@@ -48,48 +45,6 @@ animateFrames frames rate time =
         currentFrameIndex = floor (time * rate) `mod` frameCount
     in frames !! currentFrameIndex
 
--- original function
--- viewPure :: GameState -> Picture
--- viewPure g@MkGameState {windowScale = wScale} =
---   windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
---   where
---     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
---     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
---     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
---     acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
---     scaletext = color cyan    $ translate (-100) 80 $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
---     player = head (players g)
---     (MkHB w h) = getHitbox player
---     (vx,vy) = getVel player
---     (ax,ay) = getAcc player
---     (es,ws) = (entityScale g,windowScale g)
---     debug
---       | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
---       | otherwise = blank
-
-
--- viewPure :: GameState -> Picture
--- viewPure g@MkGameState {windowScale = wScale} =
---   windowToRatio wScale $ pictures $ pause ++ [debug] ++ viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
---   where
---     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
---     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
---     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
---     acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
---     scaletext = color cyan    $ translate (-100) 80 $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
---     pausetext = color white   $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
---     debug
---       | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
---       | otherwise = blank
---     pause
---       | isPaused g = [pausetext]
---       | otherwise  = []
---     player = head (players g)
---     (MkHB w h) = getHitbox player
---     (vx,vy) = getVel player
---     (ax,ay) = getAcc player
---     (es,ws) = (entityScale g,windowScale g)
-
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
   windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g) ++ [pauseoverlay]
@@ -112,9 +67,6 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
     (vx,vy) = getVel player
     (ax,ay) = getAcc player
     (es,ws) = (entityScale g,windowScale g)
-
-
---TODO: Implement scale function
 
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
@@ -150,17 +102,17 @@ flipPicture = Scale (-1) 1
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
-viewEnemy g (en:ens) =
-  case entity (eType en) of
-    -- GOOMBA -> viewObject orange (pos (ePhysics en)) marioPath : viewEnemy ens
-    MkEnemyType GOOMBA -> bmp : hbox : viewEnemy g ens
-    _     -> [blank]
-    where
+viewEnemy g (en:ens) = bmp : hbox : viewEnemy g ens
+  where
       -- FIXME: DA HEK IS GOING ON HERE 
       phys = physics (eType en)
-      -- img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
-      img = animateFrames framesGoomba 5 $ time g
+      img = 
+          case entity (eType en) of
+            MkEnemyType GOOMBA   -> animateFrames framesGoomba 5 $ time g
+            MkEnemyType GRNKOOPA -> animateFrames framesKoopa 5 $ time g
+            _                    -> undefined
       framesGoomba = [goombaWalk1, goombaWalk2]
+      framesKoopa = [greenKoopaf1, greenKoopaf2]
       bmp
         | gnd phys == GROUNDED = translate x y $ Scale s s $ imageToPicture img
         | otherwise = translate x y $ Scale s s $ rotate 180 $ imageToPicture img

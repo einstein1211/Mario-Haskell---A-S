@@ -32,6 +32,12 @@ goomba2 = MkEnemy
     ,   eAI = HARD
     }
 
+koopa :: Enemy --edit
+koopa = MkEnemy 
+    {   eType = MkEntity {entity = MkEnemyType GRNKOOPA, physics = initPhysics4, alive = ALIVE}
+    ,   eAI = HARD
+    }
+
 initPhysics2 :: Physics
 initPhysics2 = MkPhysics
     {   pos = (300.0,0.0)
@@ -46,6 +52,17 @@ initPhysics2 = MkPhysics
 initPhysics3 :: Physics
 initPhysics3 = MkPhysics
     {   pos = (-300.0,0.0)
+    ,   vel = (-200.0,300.0)
+    ,   mxv = (3000,3000)
+    ,   acc = (0.0,0.0)
+    ,   gnd = AIRBORNE
+    ,   htb = MkHB 14 16   
+    ,   dir = RIGHT
+    }
+
+initPhysics4 :: Physics
+initPhysics4 = MkPhysics
+    {   pos = (-500.0,0.0)
     ,   vel = (-200.0,300.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
