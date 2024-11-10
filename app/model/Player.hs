@@ -3,7 +3,7 @@ module Model.Player where
 import Model.Basic
 import Graphics.Gloss
 
-data Movement   = STANDING | RUNNING | CROUCHED | JUMPING
+data Movement   = STANDING | WALKING | CROUCHING | JUMPING -- | SKIDDING
     deriving (Show,Eq)
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)
@@ -20,6 +20,7 @@ instance PhysicsFunctions Player where
         pphys = physics ent
         (px,py) = getPos p
     kill p = p {pType = (pType p) {alive = DEAD}}
+    isGrounded p = gnd (physics (pType p)) == GROUNDED
 
 -- | Data describing players in Game 
 data Player = MkPlayer
@@ -36,7 +37,7 @@ mario = MkPlayer
     ,   pMovement = STANDING
     ,   pPower = SMALL
     ,   pJumpTime = 0
-    ,   pLives = 3
+    ,   pLives = 1
     }
 
 initPhysics :: Physics

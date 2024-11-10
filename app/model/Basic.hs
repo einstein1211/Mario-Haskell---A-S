@@ -42,6 +42,7 @@ class PhysicsFunctions f where
     isAlive   :: f -> Bool
     moveBy    :: (Float,Float) -> f -> f
     kill      :: f -> f
+    isGrounded :: f -> Bool
 
 -- class GridIndexFunctions a where
 --     changeGridIndex :: GridIndex -> a -> a

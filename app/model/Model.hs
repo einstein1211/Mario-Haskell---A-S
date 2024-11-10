@@ -14,6 +14,8 @@ import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 data HasWon     = WON   | LOST      | PLAYING
     deriving(Show,Eq)
 
+data GameMode = StartMenu | Playing deriving (Eq, Show) 
+
 data GameState = MkGameState 
     {   lives :: Int
     ,   score :: Int
@@ -39,6 +41,8 @@ data GameState = MkGameState
     ,   isScaled :: Bool
     ,   reScaled :: Bool
     ,   windowShifted :: Bool
+    ,   isPaused :: Bool
+    ,   mode :: GameMode 
     } deriving (Show,Eq)
 
 initialState :: GameState
@@ -48,8 +52,9 @@ initialState = MkGameState
     ,   time = 0.0
     ,   status = PLAYING
     ,   players = [mario]
-    ,   enemies = [goomba,goomba2]
+    ,   enemies = [goomba,goomba2,koopa]
     ,   items = []
+    -- ,   items = [coin, mushroom]
     -- ,   blocks = []
     -- ,   blocks = [brick,qblock,empblock,hidblock]
     ,   platforms = []
@@ -69,4 +74,6 @@ initialState = MkGameState
     ,   isScaled = False
     ,   reScaled = False
     ,   windowShifted = False
+    ,   isPaused = False
+    ,   mode = StartMenu
     }

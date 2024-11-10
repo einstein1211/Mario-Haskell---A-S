@@ -24,4 +24,4 @@ main = playIO window
 
 -- images :: [String]
 -- images = []
-    
+

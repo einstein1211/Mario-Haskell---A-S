@@ -78,10 +78,24 @@ playerState s p = p'
     (vx,vy) = vel phys
     grounded = gnd phys == GROUNDED
 
-    p'
-      | not grounded  = scaleTo s p {pMovement = JUMPING, pType= typ {physics = phys {htb = (MkHB 14 16)}}}
-      | vx==0         = scaleTo s p {pMovement = STANDING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
-      | otherwise     = scaleTo s p {pMovement = RUNNING, pType= typ {physics = phys {htb = (MkHB 12 16)}}}
+    htbGround =
+      case pPower p of 
+        SMALL -> MkHB 12 16
+        BIG   -> MkHB 16 32
+    htbJump =
+      case pPower p of
+        SMALL -> MkHB 14 16
+        BIG   -> MkHB 16 32
+    htbCrouch = 
+      case pPower p of 
+        SMALL -> MkHB 12 16
+        BIG   -> MkHB 16 22
+
+    p' -- FIX ME
+      | not grounded                      = scaleTo s p {pMovement = JUMPING, pType= typ {physics = phys {htb = htbJump}}}
+      | pMovement p == CROUCHING          = scaleTo s p {pMovement = CROUCHING, pType= typ {physics = phys {htb = htbCrouch}}}
+      | vx==0                             = scaleTo s p {pMovement = STANDING, pType= typ {physics = phys {htb = htbGround}}}
+      | otherwise                         = scaleTo s p {pMovement = WALKING, pType= typ {physics = phys {htb = htbGround}}}
 
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
@@ -94,9 +108,9 @@ entityInteractions s g =
   }
   where
     pve p = foldr playerVsEnemy p (enemies g)
-    pvi p = p
+    pvi p = foldr (playervsItem (windowScale g)) p (items g)
     evp e = foldr enemyVsPlayer e (players g)
-    ivp i = i
+    ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
     -- bvp b = foldr (blockVsPlayer (windowScale g)) b (players g) 
     bvp :: Column -> Column --Block vs Player interactions
     bvp (MkColumn tiles) = MkColumn $ foldr f [] tiles
@@ -155,8 +169,44 @@ enemyVsPlayer p e = newe
       | abs (px-ex) < abs (py-ey) && (py > ey) = kill e
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
--- entityInteract :: Entity -> Entity -> Entity
--- entityInteract
+
+playervsItem :: Scaling -> Item -> Player -> Player
+playervsItem s i p = newp 
+  where
+    newp
+      | intersects ipos ihb ppos phb = p'
+      | otherwise                    = p
+    ppos@(px,py)    = pos pphys
+    phb@(MkHB _ ph) = htb pphys
+    pphys           = physics ent
+    ipos@(ix,iy)    = 
+      case entity (iType i) of
+        MkItemType COIN -> gridPos (iPos i) s
+        _               -> pos iphys
+    ihb@(MkHB _ ih) = htb iphys
+    iphys           = physics (iType i)
+    ent             = pType p
+    p' = 
+      case entity (iType i) of
+        MkItemType MUSHROOM -> if pPower p == SMALL then p {pPower = BIG} else p
+        _                   -> p
+
+itemVsPlayer :: Scaling -> Player -> Item -> Item
+itemVsPlayer s p i = newi
+  where
+    newi
+      | intersects ipos ihb ppos phb = i {iType = ent {alive = DEAD}}
+      | otherwise                    = i
+    ppos@(px,py)    = pos pphys
+    phb@(MkHB _ ph) = htb pphys
+    pphys           = physics (pType p)
+    ipos@(ix,iy)    = 
+      case entity (iType i) of
+        MkItemType COIN -> gridPos (iPos i) s
+        _               -> pos iphys
+    ihb@(MkHB _ ih) = htb iphys
+    iphys           = physics ent
+    ent             = iType i
 
 blockVsPlayer :: GameState -> Player -> Block -> Block
 blockVsPlayer g p b =

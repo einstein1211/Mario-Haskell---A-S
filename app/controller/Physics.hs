@@ -36,7 +36,7 @@ applyPhysics secs gstate =
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
 applyPhysics' :: Float -> GameState -> Entity -> Entity
-applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel = (vx',vy')}}
+applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -44,6 +44,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
     grounded = gnd p == GROUNDED
     x'  = x   + vx*s
     y'  = y   + vy*s
+    enttype = entity e
     vx' --BUG: Makes you get stuck on walls 
       | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
@@ -53,6 +54,9 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p {pos = (x',y'), vel
       | grounded && vy<0  = 0
       | grounded && vy==0 = vy + ay*s
       | otherwise         = vy + (ay+grav)*s
+    p'
+      | enttype == MkItemType MUSHROOM = p {pos = (x',y'), vel = (vx,vy')}
+      | otherwise                      = p {pos = (x',y'), vel = (vx',vy')}
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
 playerPhysics :: GameState -> Player -> Player
@@ -84,7 +88,7 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | grounded&&jmpt>0     = (-grav)
       | not grounded&&jmpt>0 = 0.5*(-grav)
       | otherwise            = 0
-    phys' = phys {acc = acc',mxv = mv',pos = (x',y)}
+    phys' = phys {acc = acc',mxv = mv',pos = (x',y), dir = dir'}
     x' = min x xThresHold
     xThresHold = fromIntegral (fst res) * 0.125 * windowScale g
     mv' = if shft then (700,800) else (300,800)
@@ -99,8 +103,14 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | not (up||space)   = 0
       | otherwise         = jmpt
     movement
-      | down = CROUCHED
+      | left = WALKING
+      | right = WALKING
+      | down = CROUCHING
       | otherwise = pMovement pl
+    dir'
+      | left    = LEFT
+      | right   = RIGHT
+      | otherwise = dir phys
 
 maxSpdCheck :: Entity -> Entity
 maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
