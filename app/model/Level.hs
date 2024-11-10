@@ -322,7 +322,9 @@ stairColumn8 cn =
 
 flagpoleColumn :: ColumnNumber -> Column
 flagpoleColumn cn =
-  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGTOP platformHB (makeGridPos (cn,2) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGTOP platformHB (makeGridPos (cn,0) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,1) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,2) startScaling)))) $
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,3) startScaling)))) $
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,4) startScaling)))) $
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,5) startScaling)))) $
