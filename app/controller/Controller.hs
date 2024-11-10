@@ -13,7 +13,6 @@ import Debug.Trace (trace)
 import Control.Concurrent (threadDelay)
 import System.IO (writeFile, appendFile)
 
-
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
@@ -22,7 +21,6 @@ writeScore :: Int -> IO ()
 writeScore score = do
     -- Open the file for appending (create if it doesn't exist)
     appendFile "score.txt" (show score ++ "\n")
-
 
 -- Non debug step
 step :: Float -> GameState -> IO GameState
