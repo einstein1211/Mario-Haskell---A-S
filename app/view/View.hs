@@ -39,14 +39,12 @@ imageToPicture img =
 
 -- takes a list of frames, a number (higher number = faster animation) and time.
 animateFrames :: [Image] -> Float -> Float -> Image
-animateFrames frames rate time = 
+animateFrames frames rate time =
     let
         frameCount = length frames
         currentFrameIndex = floor (time * rate) `mod` frameCount
     in frames !! currentFrameIndex
 
-
---Dit is de originele viewPure functie
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
   windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g) ++ [pauseoverlay]
@@ -70,91 +68,6 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
     (ax,ay) = getAcc player
     (es,ws) = (entityScale g,windowScale g)
 
-
---Hier zijn drie verschillende versies van een viewPure functie met het start menu erin. Als het goed is doen ze het allemaal.
-
--- viewPure :: GameState -> Picture
--- viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
---   windowToRatio wScale $ pictures $ pausedOverlay ++ [debug] ++ viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
---   where
---     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
---     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
---     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
---     acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
---     scaletext = color cyan    $ translate (-100) 80 $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
---     pausedText = color red $ translate (-100) 0 $ scale 0.5 0.5 (text "Paused")
---     pausedBackground = color (makeColor 0 0 0 0.5) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
---     debug
---       | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
---       | otherwise = blank
---     pausedOverlay
---       | isPaused g = [pausedBackground, pausedText]
---       | otherwise  = []
---     player = head (players g)
---     (MkHB w h) = getHitbox player
---     (vx,vy) = getVel player
---     (ax,ay) = getAcc player
---     (es,ws) = (entityScale g,windowScale g)
-
--- viewPure :: GameState -> Picture
--- viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode = StartMenu} =
---   windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g) ++ [pauseoverlay]
---   where
---     dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
---     postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
---     veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
---     acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
---     scaletext = color cyan    $ translate (-100) 80 $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
---     pausetext = color white   $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
---     pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
---     debug
---       | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
---       | otherwise = blank
---     pauseoverlay
---       | isPaused g = pausebg <> pausetext
---       | otherwise  = blank
---     player = head (players g)
---     (MkHB w h) = getHitbox player
---     (vx,vy) = getVel player
---     (ax,ay) = getAcc player
---     (es,ws) = (entityScale g,windowScale g)
-
-
--- viewPure :: GameState -> Picture
--- viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode = gameMode} =
---   case gameMode of
---     StartMenu -> windowToRatio wScale $ pictures [startText, startOption, quitOption]
---       where
---         startText   = color white $ translate (-100) 100 $ scale 0.5 0.5 (text "Super Haskell Bros")
---         startOption = color green $ translate (-100) 50  $ scale 0.3 0.3 (text "Start")
---         quitOption  = color red   $ translate (-100) 0   $ scale 0.3 0.3 (text "Quit")
---     Playing -> windowToRatio wScale $ pictures $
---                   [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
---       where
---         gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
---         -- Pause
---         pauseOverlay = pausebg <> pausetext
---         pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
---         pausetext = color white $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
---         -- Debug
---         dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
---         postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
---         veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
---         acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
---         scaletext = color cyan    $ translate (-100) 80  $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
-        
---         debug
---           | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
---           | otherwise = blank
-
---         player = head (players g)
---         (MkHB w h) = getHitbox player
---         (vx,vy) = getVel player
---         (ax,ay) = getAcc player
---         (es,ws) = (entityScale g, windowScale g)
-
---TODO: Implement scale function
-
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
 viewPlayer g (pl:pls) =
@@ -162,19 +75,30 @@ viewPlayer g (pl:pls) =
     MkPlayerType MARIO -> bmp : hbox : viewPlayer g pls
     _     -> [blank]
     where
+      (stand, walk, jump, crouch) =
+        case pPower pl of
+          SMALL -> (marioStand, [mariof1, mariof2, mariof3], marioJump, marioStand)
+          BIG -> (superMarioStand, [superMariof1, superMariof2, superMariof3], superMarioJump, superMarioCrouch)
+          -- FIRE ->
       phys = physics (pType pl)
-      img 
-        | not (isGrounded pl) = marioJump
-        | pMovement pl == WALKING = animateFrames framesWalking 10 $ time g
-        | otherwise = marioStand
-      framesWalking = [mariof1, mariof2, mariof3]
-      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img 
+      img
+        | not (isGrounded pl) = jump
+        | pMovement pl == WALKING = animateFrames walk 10 $ time g
+        | pMovement pl == CROUCHING = crouch
+        | otherwise = stand
+      -- framesWalking = [mariof1, mariof2, mariof3]
+      bmp
+        | dir phys == LEFT = uncurry translate (pos phys)$ flipPicture $ Scale s s $ imageToPicture img
+        | otherwise        = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
       MkHB w h = htb $ physics $ pType pl
       s = entityScale g
+
+flipPicture :: Picture -> Picture
+flipPicture = Scale (-1) 1
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
@@ -208,7 +132,7 @@ viewItem g (it:its) = bmp : viewItem g its
         case entity (iType it) of
           MkItemType COIN     -> animateFrames framesCoin 10 $ time g
           MkItemType MUSHROOM -> mushroom1
-          _    -> undefined     
+          _    -> undefined
       framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
       bmp =
         case entity (iType it) of

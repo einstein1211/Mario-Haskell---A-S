@@ -21,7 +21,6 @@ directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 --   | isPaused gstate = return gstate
 --   | otherwise = return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate { time = time gstate + secs }
 
-
 --Debug step
 step :: Float -> GameState -> IO GameState --startmenu
 step secs gstate
@@ -42,7 +41,6 @@ input e gstate = case e of
   EventKey (Char 'p') Down _ _ | mode gstate == Playing   -> return gstate { isPaused = not (isPaused gstate) }
   _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
   _ -> return gstate
-
 
 resizeEvent :: Event -> GameState -> GameState
 resizeEvent (EventResize (x,y)) g = windowScaling (x,y) g
