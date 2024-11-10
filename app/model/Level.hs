@@ -74,7 +74,7 @@ instance ColumnFunctions Tile where
     -- addToColumn (MkTile (MkPlSpawn p) _)  c = addToColumn p c
     addToColumn (MkTile (MkEnSpawn e) _)  c = addToColumn e c
     -- addToColumn (MkTile (MkItSpawn i) _)  c = addToColumn i c
-    addToColumn _ c = c 
+    addToColumn _ c = c
 
 instance ColumnFunctions Int where
     addToColumn :: Int -> Column -> Column
@@ -82,7 +82,7 @@ instance ColumnFunctions Int where
 
 instance ColumnFunctions Block where
     addToColumn :: Block -> Column -> Column
-    addToColumn b@(MkBlock _ (MkPlatform _ _ (_,y)) _ _) (MkColumn tiles)  = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
+    addToColumn b@MkBlock {bPlatform = MkPlatform _ _ (_,y)} (MkColumn tiles)  = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
         where
             bf ypos' (MkTile _ chunk) = snd (getPos chunk) < ypos'
             af ypos' (MkTile _ chunk) = snd (getPos chunk) > ypos'
@@ -107,18 +107,25 @@ instance ColumnFunctions Platform where
             f _ ac = ac
 
 instance ColumnFunctions Enemy where
-    addToColumn :: Enemy -> Column -> Column
-    addToColumn e (MkColumn tiles) = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
-        where
-            y = snd (getPos e)
-            bf ypos' (MkTile _ chunk) = snd (getPos chunk) < ypos'
-            af ypos' (MkTile _ chunk) = snd (getPos chunk) > ypos'
-            t = MkTile (MkEnSpawn e) NoChunk
-    getEntries :: Column -> [Enemy]
-    getEntries (MkColumn tiles) = foldr f [] tiles
-        where
-            f (MkTile (MkEnSpawn e) _) ac = e:ac
-            f _ ac = ac
+  addToColumn :: Enemy -> Column -> Column
+  addToColumn e (MkColumn tiles) = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
+    where
+      y = snd (getPos e)
+      bf ypos' (MkTile _ chunk) = snd (getPos chunk) < ypos'
+      af ypos' (MkTile _ chunk) = snd (getPos chunk) > ypos'
+      t = MkTile (MkEnSpawn e) NoChunk
+  getEntries :: Column -> [Enemy]
+  getEntries (MkColumn tiles) = foldr f [] tiles
+    where
+      f (MkTile (MkEnSpawn e) _) ac = e:ac
+      f _ ac = ac
+
+instance ColumnFunctions Item where
+  getEntries :: Column -> [Item]
+  getEntries (MkColumn tiles) = foldr f [] tiles
+    where
+      f (MkTile (MkItSpawn i) _) ac = i:ac
+      f _ ac = ac
 
 deleteEntries :: Entry -> Column -> Column
 deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
@@ -129,13 +136,12 @@ deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
             ItemEntry    -> itf
             -- Block   -> blf
             -- Platform-> pltf
-        plf (MkTile (MkPlSpawn _) _) ac = t:ac
+        plf (MkTile (MkPlSpawn _) chunk) ac = MkTile NoSpawn chunk:ac
         plf c ac = c:ac
-        enf (MkTile (MkEnSpawn _) _) ac = trace "enemies deleted" t:ac
+        enf (MkTile (MkEnSpawn _) chunk) ac = MkTile NoSpawn chunk:ac
         enf c ac = c:ac
-        itf (MkTile (MkItSpawn _) _) ac = t:ac
+        itf (MkTile (MkItSpawn _) chunk) ac = MkTile NoSpawn chunk:ac
         itf c ac = c:ac
-        t = MkTile NoSpawn NoChunk
 
 emptyTile :: Tile
 emptyTile = MkTile NoSpawn NoChunk
@@ -167,12 +173,12 @@ goombaColumn cn =
 goombaColumn2 :: ColumnNumber -> Column
 goombaColumn2 cn =
   addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,1) startScaling))) NoChunk) $
-  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 goombaColumn3 :: ColumnNumber -> Column
 goombaColumn3 cn =
   addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
-  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 koopaColumn :: ColumnNumber -> Column
 koopaColumn cn =
@@ -214,41 +220,45 @@ pipeColumnR3 cn =
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (makeGridPos (cn,8) startScaling))))
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
+mushroomColumn :: ColumnNumber -> Column
+mushroomColumn cn =
+   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
+
 qColumn :: ColumnNumber -> Column
 qColumn cn =
-   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 qColumn2 :: ColumnNumber -> Column
 qColumn2 cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 qColumn3 :: ColumnNumber -> Column
 qColumn3 cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 brickColumn :: ColumnNumber -> Column
 brickColumn cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 brickColumn2 :: ColumnNumber -> Column
 brickColumn2 cn =
     addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 brickColumn3 :: ColumnNumber -> Column
-brickColumn3 cn = 
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+brickColumn3 cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 brickColumn4 :: ColumnNumber -> Column
-brickColumn4 cn = 
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) emptyColumn
+brickColumn4 cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) emptyColumn
 
 hidBlockColumn :: ColumnNumber -> Column
 hidBlockColumn cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock HIDDENBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,5) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock HIDDENBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,5) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 stairColumn1 :: ColumnNumber -> Column
 stairColumn1 cn =
@@ -282,43 +292,57 @@ stairColumn5 cn =
 
 stairColumn6 :: ColumnNumber -> Column
 stairColumn6 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 stairColumn7 :: ColumnNumber -> Column
 stairColumn7 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 stairColumn8 :: ColumnNumber -> Column
 stairColumn8 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,2) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,2) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+flagpoleColumn :: ColumnNumber -> Column
+flagpoleColumn cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGTOP platformHB (makeGridPos (cn,0) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,1) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,2) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 testLevel :: Level
 testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
+      -- | x == 5 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
-      | x == 22 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 22 = f (x-1) (Map.insert x (mushroomColumn x) m)
       | x == 23 = f (x-1) (Map.insert x (brickColumn2 x) m)
       | x == 24 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 25 = f (x-1) (Map.insert x (brickColumn x) m)
@@ -337,7 +361,7 @@ testLevel = f 255 Map.empty
       | x == 70 = f (x-1) (Map.insert x emptyColumn m)
       | x == 71 = f (x-1) (Map.insert x emptyColumn m)
       | x == 78 = f (x-1) (Map.insert x (brickColumn x) m)
-      | x == 79 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 79 = f (x-1) (Map.insert x (mushroomColumn x) m)
       | x == 80 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 81 = f (x-1) (Map.insert x (goombaColumn2 x) m)
       | x == 82 = f (x-1) (Map.insert x (brickColumn3 x) m)
@@ -399,7 +423,7 @@ testLevel = f 255 Map.empty
       | x == 191 = f (x-1) (Map.insert x (stairColumn7 x) m)
       | x == 192 = f (x-1) (Map.insert x (stairColumn8 x) m)
       | x == 193 = f (x-1) (Map.insert x (stairColumn8 x) m)
-    --   | x == 202 = f (x-1) (Map.insert x (flagColumn x) m)
+      | x == 202 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
 -- initialWindow :: [Column]
