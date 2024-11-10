@@ -6,44 +6,43 @@ import View.Scaling
 import Controller.Physics
 import Controller.Entity
 import Graphics.Gloss.Interface.IO.Game
+import System.Exit (exitSuccess)
+import Debug.Trace (trace)
 
--- import System.Exit
+-- trace :: String -> a -> a
 
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
---original function
+-- Non debug step
 -- step :: Float -> GameState -> IO GameState
--- step secs gstate = do
---   -- print (players gstate)
---   -- print (map pMovement (players gstate))
---   return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate {time = time gstate + secs}
+-- step secs gstate
+--   | mode gstate == StartMenu = return gstate
+--   | isPaused gstate = return gstate
+--   | otherwise = return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate { time = time gstate + secs }
 
-step :: Float -> GameState -> IO GameState
+
+--Debug step
+step :: Float -> GameState -> IO GameState --startmenu
 step secs gstate
-  | isPaused gstate = return gstate  -- Don't update if paused
-  | otherwise = return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate { time = time gstate + secs }
+  | mode gstate == StartMenu = return gstate
+  | isPaused gstate = return gstate
+  | otherwise = return $ trace "Before entityUpdate" $
+                trace (show (time gstate)) $
+                entityInteractions secs $ 
+                applyPhysics secs $ 
+                trace "After entityUpdate" $ 
+                entityUpdate gstate { time = time gstate + secs }
 
-handlePause :: Event -> GameState -> GameState
-handlePause (EventKey (Char 'p') Down _ _) gstate = 
-  gstate { isPaused = not (isPaused gstate) }
-handlePause _ gstate = gstate
-
--- gameChange :: GameState -> GameState
--- gameChange g = 
-
---original function
--- -- | Handle user input
--- input :: Event -> GameState -> IO GameState
--- -- input e g =
--- --   do
--- --     putStrLn $ show e
--- --     return g
--- input e gstate = return $ (inputKey e . resizeEvent e) gstate
--- -- input _ = return
-
+-- Handle s en q tijdens het start menu
 input :: Event -> GameState -> IO GameState
-input e gstate = return $ (handlePause e . inputKey e . resizeEvent e) gstate
+input e gstate = case e of
+  EventKey (Char 's') Down _ _ | mode gstate == StartMenu -> return gstate { mode = Playing }
+  EventKey (Char 'q') Down _ _ | mode gstate == StartMenu -> exitSuccess
+  EventKey (Char 'p') Down _ _ | mode gstate == Playing   -> return gstate { isPaused = not (isPaused gstate) }
+  _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
+  _ -> return gstate
+
 
 resizeEvent :: Event -> GameState -> GameState
 resizeEvent (EventResize (x,y)) g = windowScaling (x,y) g
