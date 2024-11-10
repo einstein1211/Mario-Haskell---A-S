@@ -39,9 +39,11 @@ step secs gstate
 
 input :: Event -> GameState -> IO GameState
 input e gstate = case e of
+  -- Start menu actions
   EventKey (Char 's') Down _ _ | mode gstate == StartMenu -> return gstate { mode = Playing }
   EventKey (Char 'q') Down _ _ | mode gstate == StartMenu -> exitSuccess
   EventKey (Char 'p') Down _ _ | mode gstate == Playing   -> return gstate { isPaused = not (isPaused gstate) }
+  EventKey (Char 'm') Down _ _ | isPaused gstate -> return gstate { mode = StartMenu, isPaused = False }
   _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
   _ | mode gstate == Exiting -> return gstate
   _ -> return gstate
