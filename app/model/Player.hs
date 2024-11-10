@@ -37,7 +37,7 @@ mario = MkPlayer
     ,   pMovement = STANDING
     ,   pPower = SMALL
     ,   pJumpTime = 0
-    ,   pLives = 3
+    ,   pLives = 1
     }
 
 initPhysics :: Physics

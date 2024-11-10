@@ -84,7 +84,7 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | grounded&&jmpt>0     = (-grav)
       | not grounded&&jmpt>0 = 0.5*(-grav)
       | otherwise            = 0
-    phys' = phys {acc = acc',mxv = mv'}
+    phys' = phys {acc = acc', mxv = mv', dir = dir'}   
     mv' = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
@@ -99,8 +99,12 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
     movement
       | left = WALKING
       | right = WALKING
-      | down = CROUCHING -- ?
+      | down = CROUCHING
       | otherwise = pMovement pl
+    dir'
+      | left    = LEFT
+      | right   = RIGHT
+      | otherwise = dir phys
 
 maxSpdCheck :: Entity -> Entity
 maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}

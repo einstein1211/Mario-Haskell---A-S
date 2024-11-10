@@ -42,7 +42,7 @@ imageToPicture img =
 
 -- takes a list of frames, a number (higher number = faster animation) and time.
 animateFrames :: [Image] -> Float -> Float -> Image
-animateFrames frames rate time = 
+animateFrames frames rate time =
     let
         frameCount = length frames
         currentFrameIndex = floor (time * rate) `mod` frameCount
@@ -123,19 +123,30 @@ viewPlayer g (pl:pls) =
     MkPlayerType MARIO -> bmp : hbox : viewPlayer g pls
     _     -> [blank]
     where
+      (stand, walk, jump, crouch) =
+        case pPower pl of
+          SMALL -> (marioStand, [mariof1, mariof2, mariof3], marioJump, marioStand)
+          BIG -> (superMarioStand, [superMariof1, superMariof2, superMariof3], superMarioJump, superMarioCrouch)
+          -- FIRE ->
       phys = physics (pType pl)
-      img 
-        | not (isGrounded pl) = marioJump
-        | pMovement pl == WALKING = animateFrames framesWalking 10 $ time g
-        | otherwise = marioStand
-      framesWalking = [mariof1, mariof2, mariof3]
-      bmp = uncurry translate (pos phys)$ Scale s s $ imageToPicture img 
+      img
+        | not (isGrounded pl) = jump
+        | pMovement pl == WALKING = animateFrames walk 10 $ time g
+        | pMovement pl == CROUCHING = crouch
+        | otherwise = stand
+      -- framesWalking = [mariof1, mariof2, mariof3]
+      bmp
+        | dir phys == LEFT = uncurry translate (pos phys)$ flipPicture $ Scale s s $ imageToPicture img
+        | otherwise        = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
       (x,y) = pos phys
       MkHB w h = htb $ physics $ pType pl
       s = entityScale g
+
+flipPicture :: Picture -> Picture
+flipPicture = Scale (-1) 1
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
@@ -169,7 +180,7 @@ viewItem g (it:its) = bmp : viewItem g its
         case entity (iType it) of
           MkItemType COIN     -> animateFrames framesCoin 10 $ time g
           MkItemType MUSHROOM -> mushroom1
-          _    -> undefined     
+          _    -> undefined
       framesCoin = [coin1f1, coin1f2, coin1f3, coin1f2, coin1f1]
       bmp =
         case entity (iType it) of
