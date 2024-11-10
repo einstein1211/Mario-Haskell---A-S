@@ -21,6 +21,8 @@ data IsGrounded = GROUNDED | AIRBORNE
 data Direction  = RIGHT | LEFT
     deriving(Show,Eq)
 
+data Entry        = PlayerEntry | EnemyEntry | ItemEntry | BlockEntry | PlatformEntry
+    deriving (Enum)
 data PlayerType   = MARIO | LUIGI
     deriving (Show,Eq)
 data EnemyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA
@@ -39,6 +41,7 @@ class PhysicsFunctions f where
     getPos    :: f -> Point
     getVel    :: f -> Velocity
     getAcc    :: f -> Acceleration
+    getDir    :: f -> Direction
     isAlive   :: f -> Bool
     moveBy    :: (Float,Float) -> f -> f
     kill      :: f -> f

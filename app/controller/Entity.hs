@@ -15,37 +15,14 @@ import Debug.Trace
 import qualified Data.Map as Map
 
 entityUpdate :: GameState -> GameState
-entityUpdate g =  filterAlive g -- $ windowShift g -- $ noReScale g
+entityUpdate g =  filterAlive $ windowShift g
   where
-    noReScale gs
-      | not (reScaled gs) =
-        gs {
-          players   = map (scaleTo es) (players gs),
-          enemies   = map (scaleTo es) (enemies gs),
-          items     = map (scaleTo es) (items gs),
-          -- blocks    = map (scaleTo es) (blocks gs),
-          -- platforms = map (scaleTo es) (platforms gs),
-          isScaled  = True
-          }
-      | otherwise =
-        gs {
-          players   = map (scaleTo ws) (players gs),
-          enemies   = map (scaleTo ws) (enemies gs),
-          items     = map (scaleTo ws) (items gs),
-          -- blocks    = map (scaleTo es) (blocks gs),
-          -- platforms = map (scaleTo es) (platforms g),
-          isScaled  = True
-          }
     windowShift gs
-      | not (windowShifted gs) =
+      | not (windowShifted gs) = -- trace "window shifted"
         gs {
-          -- blocks = Map.foldr (\c ac -> getEntries c++ac) [] (level g), --level for now, must be sliding window
-          -- blocks = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
-          -- platforms = Map.foldr (\c ac -> getEntries c++ac) [] (level g),
-          -- platforms = map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs),
+          enemies = (enemies gs) ++ (map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
+          slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty (slidingWindow gs),
           windowShifted = True
-
-          -- ,isScaled = False
           }
       | otherwise = gs
     filterAlive gs =
@@ -53,7 +30,7 @@ entityUpdate g =  filterAlive g -- $ windowShift g -- $ noReScale g
         players = filter isAlive (map (playerState es) (players gs)),
         enemies  = filter isAlive (enemies gs),
         items    = filter isAlive (items gs),
-        slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow g)
+        slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow gs)
         -- blocks   = filter isAlive (blocks gs)
         }
     checkAlive (MkColumn tiles) = MkColumn $ foldr f [] tiles
@@ -64,10 +41,9 @@ entityUpdate g =  filterAlive g -- $ windowShift g -- $ noReScale g
         f t ac = t : ac
     es = entityScale g
     ws = windowScale g
-    -- f t = changeGridIndex (MkGrid (x-1) y) t
-    --     where
-    --       (MkGrid x y) = getGridIndex t
 
+deleteEntriesFromWindow :: Level -> Level
+deleteEntriesFromWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty
 
 playerState :: Scaling -> Player -> Player
 playerState s p = p'
@@ -101,21 +77,22 @@ entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
   g {
     players = map pve (map pvi (players g)),
-    enemies = map evp (enemies g),
+    enemies = map evp (map eve (enemies g)),
     items   = map ivp (items g),
     slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (bvp c) ac) Map.empty (slidingWindow g)
     -- blocks  = map bvp (blocks g)
   }
   where
     pve p = foldr playerVsEnemy p (enemies g)
-    pvi p = foldr (playervsItem (windowScale g)) p (items g)
+    pvi p = foldr (playerVsItem (windowScale g)) p (items g)
     evp e = foldr enemyVsPlayer e (players g)
+    eve e = foldr enemyVsEnemy e (filter (/=e) (enemies g))
     ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
     -- bvp b = foldr (blockVsPlayer (windowScale g)) b (players g) 
     bvp :: Column -> Column --Block vs Player interactions
     bvp (MkColumn tiles) = MkColumn $ foldr f [] tiles
       where
-        f (MkTile s (MkBlkChunk b)) ac = MkTile s (MkBlkChunk (bvp' b)) : ac
+        f (MkTile spawn (MkBlkChunk b)) ac = MkTile spawn (MkBlkChunk (bvp' b)) : ac
         f t ac = t : ac
         bvp' b = foldr (blockVsPlayer g) b (players g)
     -- bvp (MkColumn []) = MkColumn []
@@ -170,8 +147,31 @@ enemyVsPlayer p e = newe
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
 
-playervsItem :: Scaling -> Item -> Player -> Player
-playervsItem s i p = newp 
+enemyVsEnemy :: Enemy -> Enemy -> Enemy
+enemyVsEnemy e2 e1 = newe
+  where
+    newe
+      | intersects e1pos e1hb e2pos e2hb = e1'
+      | otherwise                    = e1
+    e1pos@(px,py)    = getPos e1
+    e1hb@(MkHB _ ph) = htb e1phys
+    e1phys           = physics (eType e1)
+    e2pos@(ex,ey)    = pos e2phys
+    e2hb@(MkHB _ eh) = htb e2phys
+    e2phys           = physics (eType e2)
+    (vx,vy)          = getVel e1
+    e1'
+      | getDir e1 == RIGHT = e1 {eType = (eType e1) {physics = e1phys {vel = (-speed,vy), dir = LEFT}}}
+      | getDir e1 == LEFT = e1 {eType = (eType e1) {physics = e1phys {vel = (speed,vy), dir = RIGHT}}}
+      | otherwise = e1
+    speed =
+      case eAI e1 of
+        EASY    -> 150
+        MEDIUM  -> 175
+        HARD    -> 200
+
+playerVsItem :: Scaling -> Item -> Player -> Player
+playerVsItem s i p = newp 
   where
     newp
       | intersects ipos ihb ppos phb = p'
@@ -210,12 +210,11 @@ itemVsPlayer s p i = newi
 
 blockVsPlayer :: GameState -> Player -> Block -> Block
 blockVsPlayer g p b =
-  -- (trace (show b)) newb
   newb
   where
     newb
-      | intersects ppos phb bpos bhb = (trace "block hit") b'
-      | otherwise                    =  b
+      | intersects ppos phb bpos bhb = b'
+      | otherwise                    = b
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
