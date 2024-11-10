@@ -30,6 +30,15 @@ makeGoomba (x,y) = MkEnemy
     ,   eAI = EASY
     }
 
+makeKoopa :: Point -> Enemy
+makeKoopa (x,y) = MkEnemy
+    {   eType = MkEntity 
+                {entity = MkEnemyType GRNKOOPA, 
+                physics = koopaPhys {pos = (x,y)}, 
+                alive = ALIVE}
+    ,   eAI = MEDIUM
+    }
+
 goomba :: Enemy
 goomba = MkEnemy
     {   eType = MkEntity {entity = MkEnemyType GOOMBA, physics = goombaPhys, alive = ALIVE}
@@ -50,12 +59,23 @@ koopa = MkEnemy
 
 goombaPhys :: Physics
 goombaPhys = MkPhysics
-    {   pos = (300.0,0.0)
+    {   pos = (0.0,0.0)
     ,   vel = (-150.0,0.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = MkHB 14 16   
+    ,   dir = LEFT
+    }
+
+koopaPhys :: Physics
+koopaPhys = MkPhysics
+    {   pos = (0.0,0.0)
+    ,   vel = (-150.0,0.0)
+    ,   mxv = (3000,3000)
+    ,   acc = (0.0,0.0)
+    ,   gnd = AIRBORNE
+    ,   htb = MkHB 14 24   
     ,   dir = LEFT
     }
 

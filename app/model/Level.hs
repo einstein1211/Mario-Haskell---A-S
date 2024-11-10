@@ -151,28 +151,32 @@ emptyColumn = foldl (flip addToColumn) (MkColumn []) list
 
 dirtColumn :: Column
 dirtColumn = foldl addDirt emptyColumn list
-    where
-        addDirt ac c = addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (grid c)))) ac
-        grid x = makeGridPos (0,fromIntegral x) 4
+  where
+    addDirt ac c = addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (grid c)))) ac
+    grid x = makeGridPos (0,fromIntegral x) 4
 
 standardColumn :: ColumnNumber -> Column
 standardColumn cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,10) startScaling))))
-    $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,11) startScaling)))) emptyColumn
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,10) startScaling))))
+  $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,11) startScaling)))) emptyColumn
 
 goombaColumn :: ColumnNumber -> Column
 goombaColumn cn =
-    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) (standardColumn cn)
+  addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) (standardColumn cn)
 
 goombaColumn2 :: ColumnNumber -> Column
 goombaColumn2 cn =
-    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,1) startScaling))) NoChunk) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+  addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,1) startScaling))) NoChunk) $
+  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
 
 goombaColumn3 :: ColumnNumber -> Column
 goombaColumn3 cn =
-    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+  addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
+  addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+koopaColumn :: ColumnNumber -> Column
+koopaColumn cn =
+  addToColumn (MkTile (MkEnSpawn (makeKoopa (makeGridPos (cn,9) startScaling))) NoChunk) (standardColumn cn)
 
 pipeColumnL :: ColumnNumber -> Column
 pipeColumnL cn =
@@ -311,7 +315,7 @@ testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
-      | x == 10 = f (x-1) (Map.insert x (goombaColumn x) m)
+      -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 22 = f (x-1) (Map.insert x (qColumn x) m)
@@ -348,7 +352,7 @@ testLevel = f 255 Map.empty
       | x == 102 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 103 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 108 = f (x-1) (Map.insert x (qColumn x) m)
-      -- x == 109 koopaColumn
+      | x == 109 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 111 = f (x-1) (Map.insert x (qColumn3 x) m)
       | x == 114 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 116 = f (x-1) (Map.insert x (goombaColumn x) m)
