@@ -46,9 +46,9 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
   case gameMode of
     StartMenu -> windowToRatio wScale $ pictures [startText, startOption, quitOption]
       where
-        startText   = color white $ translate (-100) 100 $ scale 0.5 0.5 (text "Super Haskell Bros")
-        startOption = color green $ translate (-100) 50  $ scale 0.3 0.3 (text "Press S to start")
-        quitOption  = color red   $ translate (-100) 0   $ scale 0.3 0.3 (text "Press Q to quit")
+        startText   = color white $ translate (-300) 100 $ scale 0.5 0.5 (text "Super Haskell Bros")
+        startOption = color green $ translate (-170) 50  $ scale 0.3 0.3 (text "Press S to start")
+        quitOption  = color red   $ translate (-170) 0   $ scale 0.3 0.3 (text "Press Q to quit")
     Playing -> windowToRatio wScale $ pictures $
                   [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
       where
@@ -59,16 +59,16 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
         -- Pause
         pauseOverlay = pausebg <> pausetext <> unpausetext <> menutext
         pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
-        pausetext = color white $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
-        unpausetext = color green $ translate (-100) 150 $ scale 0.2 0.2 (text "Press P to unpause")
-        menutext = color cyan $ translate (-100) 100 $ scale 0.2 0.2 (text "Press M to return to menu")
+        pausetext = color white $ translate (-120) 200 $ scale 0.5 0.5 (text "Paused")
+        unpausetext = color green $ translate (-150) 150 $ scale 0.2 0.2 (text "Press P to unpause")
+        menutext = color cyan $ translate (-200) 100 $ scale 0.2 0.2 (text "Press M to return to menu")
         -- Debug
         dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
         postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
         veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
         acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
         scaletext = color cyan    $ translate (-100) 80  $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
-        
+
         debug
           | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
           | otherwise = blank
