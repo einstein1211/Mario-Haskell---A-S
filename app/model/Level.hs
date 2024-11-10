@@ -172,8 +172,17 @@ pipeColumnR3 cn =
 
 qColumn :: ColumnNumber -> Column
 qColumn cn =
---   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (MkGrid cn 5))) 5) $
    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+qColumn2 :: ColumnNumber -> Column
+qColumn2 cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+qColumn3 :: ColumnNumber -> Column
+qColumn3 cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
 
 brickColumn :: ColumnNumber -> Column
 brickColumn cn =
@@ -184,28 +193,104 @@ brickColumn2 cn =
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
 
+brickColumn3 :: ColumnNumber -> Column
+brickColumn3 cn = 
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+brickColumn4 :: ColumnNumber -> Column
+brickColumn4 cn = 
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) emptyColumn
+
+hidBlockColumn :: ColumnNumber -> Column
+hidBlockColumn cn =
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock HIDDENBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,5) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+stairColumn1 :: ColumnNumber -> Column
+stairColumn1 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn2 :: ColumnNumber -> Column
+stairColumn2 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn3 :: ColumnNumber -> Column
+stairColumn3 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn4 :: ColumnNumber -> Column
+stairColumn4 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
 
 testLevel :: Level
 testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
-      | x == 17 = f (17-1) (Map.insert 17 (qColumn 17) m)
-      | x == 21 = f (21-1) (Map.insert 21 (brickColumn 21) m)
-      | x == 22 = f (22-1) (Map.insert 22 (qColumn 22) m)
-      | x == 23 = f (23-1) (Map.insert 23 (brickColumn2 23) m)
-      | x == 24 = f (24-1) (Map.insert 24 (qColumn 24) m)
-      | x == 25 = f (25-1) (Map.insert 25 (brickColumn 25) m)
-      | x == 29 = f (29-1) (Map.insert 29 (pipeColumnL 29) m)
-      | x == 30 = f (30-1) (Map.insert 30 (pipeColumnR 30) m)
-      | x == 39 = f (39-1) (Map.insert 39 (pipeColumnL2 39) m)
-      | x == 40 = f (40-1) (Map.insert 40 (pipeColumnR2 40) m)
-      | x == 47 = f (47-1) (Map.insert 47 (pipeColumnL3 47) m)
-      | x == 48 = f (48-1) (Map.insert 48 (pipeColumnR3 48) m)
-      | x == 58 = f (58-1) (Map.insert 58 (pipeColumnL3 58) m)
-      | x == 59 = f (59-1) (Map.insert 59 (pipeColumnR3 59) m)
-      | x == 70 = f (70-1) (Map.insert 70 emptyColumn m)
-      | x == 71 = f (71-1) (Map.insert 71 emptyColumn m)
+      | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 22 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 23 = f (x-1) (Map.insert x (brickColumn2 x) m)
+      | x == 24 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 25 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 29 = f (x-1) (Map.insert x (pipeColumnL x) m)
+      | x == 30 = f (x-1) (Map.insert x (pipeColumnR x) m)
+      | x == 39 = f (x-1) (Map.insert x (pipeColumnL2 x) m)
+      | x == 40 = f (x-1) (Map.insert x (pipeColumnR2 x) m)
+      | x == 47 = f (x-1) (Map.insert x (pipeColumnL3 x) m)
+      | x == 48 = f (x-1) (Map.insert x (pipeColumnR3 x) m)
+      | x == 58 = f (x-1) (Map.insert x (pipeColumnL3 x) m)
+      | x == 59 = f (x-1) (Map.insert x (pipeColumnR3 x) m)
+      | x == 65 = f (x-1) (Map.insert x (hidBlockColumn x) m)
+      | x == 70 = f (x-1) (Map.insert x emptyColumn m)
+      | x == 71 = f (x-1) (Map.insert x emptyColumn m)
+      | x == 78 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 79 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 80 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x > 80 && x < 88 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 88 || x == 89 = f (x-1) (Map.insert x (brickColumn4 x) m)
+      | x == 90 = f (x-1) (Map.insert x emptyColumn m)
+      | x > 92 && x < 95 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 96 = f (x-1) (Map.insert x (qColumn2 x) m)
+      | x == 102 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 103 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 108 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 111 = f (x-1) (Map.insert x (qColumn3 x) m)
+      | x == 114 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 120 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x > 122 && x < 127 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 132 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 133 || x == 134 = f (x-1) (Map.insert x (brickColumn2 x) m)
+      | x == 135 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 138 = f (x-1) (Map.insert x (stairColumn1 x) m)
+      | x == 139 = f (x-1) (Map.insert x (stairColumn2 x) m)
+      | x == 140 = f (x-1) (Map.insert x (stairColumn3 x) m)
+      | x == 141 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 144 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 145 = f (x-1) (Map.insert x (stairColumn3 x) m)
+      | x == 146 = f (x-1) (Map.insert x (stairColumn2 x) m)
+      | x == 147 = f (x-1) (Map.insert x (stairColumn1 x) m)
+      | x == 152 = f (x-1) (Map.insert x (stairColumn1 x) m)
+      | x == 153 = f (x-1) (Map.insert x (stairColumn2 x) m)
+      | x == 154 = f (x-1) (Map.insert x (stairColumn3 x) m)
+      | x == 155 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 156 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 157 || x == 158 = f (x-1) (Map.insert x emptyColumn m)
+      | x == 159 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 160 = f (x-1) (Map.insert x (stairColumn3 x) m)
+      | x == 161 = f (x-1) (Map.insert x (stairColumn2 x) m)
+      | x == 162 = f (x-1) (Map.insert x (stairColumn1 x) m)
+      | x == 167 = f (x-1) (Map.insert x (pipeColumnL x) m)
+      | x == 168 = f (x-1) (Map.insert x (pipeColumnR x) m)
+      | x == 172 || x == 173 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 174 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 175 = f (x-1) (Map.insert x (brickColumn x) m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
 -- initialWindow :: [Column]
