@@ -123,8 +123,8 @@ viewEnemy g (en:ens) = bmp : hbox : viewEnemy g ens
       framesGoomba = [goombaWalk1, goombaWalk2]
       framesKoopa = [greenKoopaf1, greenKoopaf2]
       bmp
-        | gnd phys == GROUNDED = translate x y $ Scale s s $ imageToPicture img
-        | otherwise = translate x y $ Scale s s $ rotate 180 $ imageToPicture img
+        | dir phys == LEFT = translate x y $ flipPicture $ Scale s s $ imageToPicture img
+        | otherwise = translate x y $ Scale s s $ imageToPicture img
       hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank

@@ -12,6 +12,7 @@ instance PhysicsFunctions Player where
     getPos p = pos $ physics $ pType p
     getVel p = vel $ physics $ pType p
     getAcc p = acc $ physics $ pType p
+    getDir p = dir $ physics $ pType p
     getHitbox p = htb $ physics $ pType p
     isAlive p = alive (pType p) == ALIVE  
     moveBy (x,y) p = p {pType = (pType p) {physics = pphys{pos=(px+x,py+y)}}} 
