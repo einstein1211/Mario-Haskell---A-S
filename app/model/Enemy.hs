@@ -9,6 +9,7 @@ data EnemyAI = EASY | MEDIUM | HARD
 instance PhysicsFunctions Enemy where
     getPos e = pos $ physics $ eType e
     getVel e = vel $ physics $ eType e
+    getDir e = dir $ physics $ eType e
     getHitbox e = htb $ physics $ eType e
     isAlive e = alive (eType e) == ALIVE
     moveBy (xoff,yoff) e = e{eType = (eType e) {physics = (physics (eType e)) {pos = (xoff+fst(getPos e),yoff+snd(getPos e))}}}

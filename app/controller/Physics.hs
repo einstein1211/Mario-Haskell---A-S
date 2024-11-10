@@ -55,9 +55,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
       | grounded && vy<0  = 0
       | grounded && vy==0 = vy + ay*s
       | otherwise         = vy + (ay+grav)*s
-    p'
-      | enttype == MkItemType MUSHROOM = p {pos = (x',y'), vel = (vx,vy')}
-      | otherwise                      = p {pos = (x',y'), vel = (vx',vy')}
+    p' = p {pos = (x',y'), vel = (vx',vy')}                     
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
 playerPhysics :: GameState -> Player -> Player
@@ -119,13 +117,16 @@ enemyPhysics g en = en {eType = ent {physics = phys'}}
     ent = eType en
     phys = physics ent
     phys' = phys {vel = vel',dir = dir'}
-    -- (x,y) = getPos en
+    (px,py) = getPos (head (players g))
+    (x,y) = getPos en
     (vx,vy) = getVel en
     dir'
       | vx > 0 = RIGHT
       | otherwise = LEFT
     vel'
-      | vx == 0 && (dir phys) == RIGHT = (-speed,vy)
+      | eAI en /= EASY && px > x     = (speed,vy)
+      | eAI en /= EASY && px < x     = (-speed,vy)
+      | vx == 0 && dir phys == RIGHT = (-speed,vy)
       | vx == 0 && dir phys == LEFT  = (speed,vy)
       | otherwise = (vx,vy)
     speed =

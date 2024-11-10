@@ -77,15 +77,16 @@ entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
   g {
     players = map pve (map pvi (players g)),
-    enemies = map evp (enemies g),
+    enemies = map evp (map eve (enemies g)),
     items   = map ivp (items g),
     slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (bvp c) ac) Map.empty (slidingWindow g)
     -- blocks  = map bvp (blocks g)
   }
   where
     pve p = foldr playerVsEnemy p (enemies g)
-    pvi p = foldr (playervsItem (windowScale g)) p (items g)
+    pvi p = foldr (playerVsItem (windowScale g)) p (items g)
     evp e = foldr enemyVsPlayer e (players g)
+    eve e = foldr enemyVsEnemy e (filter (/=e) (enemies g))
     ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
     -- bvp b = foldr (blockVsPlayer (windowScale g)) b (players g) 
     bvp :: Column -> Column --Block vs Player interactions
@@ -146,8 +147,31 @@ enemyVsPlayer p e = newe
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
 
-playervsItem :: Scaling -> Item -> Player -> Player
-playervsItem s i p = newp 
+enemyVsEnemy :: Enemy -> Enemy -> Enemy
+enemyVsEnemy e2 e1 = newe
+  where
+    newe
+      | intersects e1pos e1hb e2pos e2hb = e1'
+      | otherwise                    = e1
+    e1pos@(px,py)    = getPos e1
+    e1hb@(MkHB _ ph) = htb e1phys
+    e1phys           = physics (eType e1)
+    e2pos@(ex,ey)    = pos e2phys
+    e2hb@(MkHB _ eh) = htb e2phys
+    e2phys           = physics (eType e2)
+    (vx,vy)          = getVel e1
+    e1'
+      | getDir e1 == RIGHT = e1 {eType = (eType e1) {physics = e1phys {vel = (-speed,vy), dir = LEFT}}}
+      | getDir e1 == LEFT = e1 {eType = (eType e1) {physics = e1phys {vel = (speed,vy), dir = RIGHT}}}
+      | otherwise = e1
+    speed =
+      case eAI e1 of
+        EASY    -> 150
+        MEDIUM  -> 175
+        HARD    -> 200
+
+playerVsItem :: Scaling -> Item -> Player -> Player
+playerVsItem s i p = newp 
   where
     newp
       | intersects ipos ihb ppos phb = p'

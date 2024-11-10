@@ -41,6 +41,7 @@ class PhysicsFunctions f where
     getPos    :: f -> Point
     getVel    :: f -> Velocity
     getAcc    :: f -> Acceleration
+    getDir    :: f -> Direction
     isAlive   :: f -> Bool
     moveBy    :: (Float,Float) -> f -> f
     kill      :: f -> f
