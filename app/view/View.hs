@@ -12,9 +12,6 @@ import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
 
-import Graphics.Gloss.Interface.Pure.Animate
-import View.Images (mushroom1, goombaWalk1)
-
 
 -- viewObject :: Color -> Point -> Path -> Picture
 -- viewObject c p pt =
@@ -181,17 +178,17 @@ viewPlayer g (pl:pls) =
 
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
-viewEnemy g (en:ens) =
-  case entity (eType en) of
-    -- GOOMBA -> viewObject orange (pos (ePhysics en)) marioPath : viewEnemy ens
-    MkEnemyType GOOMBA -> bmp : hbox : viewEnemy g ens
-    _     -> [blank]
-    where
+viewEnemy g (en:ens) = bmp : hbox : viewEnemy g ens
+  where
       -- FIXME: DA HEK IS GOING ON HERE 
       phys = physics (eType en)
-      -- img = if mod (round (fst (pos phys))) 100 > 50 then goombaWalk1 else goombaWalk2
-      img = animateFrames framesGoomba 5 $ time g
+      img = 
+          case entity (eType en) of
+            MkEnemyType GOOMBA   -> animateFrames framesGoomba 5 $ time g
+            MkEnemyType GRNKOOPA -> animateFrames framesKoopa 5 $ time g
+            _                    -> undefined
       framesGoomba = [goombaWalk1, goombaWalk2]
+      framesKoopa = [greenKoopaf1, greenKoopaf2]
       bmp
         | gnd phys == GROUNDED = translate x y $ Scale s s $ imageToPicture img
         | otherwise = translate x y $ Scale s s $ rotate 180 $ imageToPicture img
