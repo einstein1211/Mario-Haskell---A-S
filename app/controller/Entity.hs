@@ -102,11 +102,42 @@ entityInteractions s g =
       -- where
       --   f c ac = (blockVsPlayer (windowScale g))
 
+-- playerVsEnemy :: Enemy -> Player -> Player
+-- playerVsEnemy e p = newp
+--   where
+--     newp
+--       | intersects ppos phb epos ehb = p'
+--       | otherwise                    = p
+--     ppos@(px,py)    = pos pphys
+--     phb@(MkHB _ ph) = htb pphys
+--     pphys           = physics ent
+--     (ax,ay)         = acc pphys
+--     (vx,vy)         = vel pphys
+--     epos@(ex,ey)    = pos ephys
+--     ehb@(MkHB _ eh) = htb ephys
+--     ephys           = physics (eType e)
+--     ent             = pType p
+--     p'
+--       | abs (px-ex) < abs (py-ey) && (py > ey) = p {pType = ent {physics = pphys {vel = (vx,500),gnd = GROUNDED}}}
+--       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
+--       | otherwise = damage
+--     -- yup = (px,py+((ph/2)+(eh/2)-abs (py-ey)))
+--     damage =
+--       case pPower p of
+--         -- SMALL -> kill p
+--         -- _     -> p {pPower = SMALL}
+--         SMALL
+--           | pInvTime p <= 0 -> kill p       
+--           | otherwise -> p                  
+--         _ -> p {pPower = SMALL}        
+
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
   where
+    -- Check if player and enemy intersect and if the player is invincible
     newp
-      | intersects ppos phb epos ehb = p'
+      | intersects ppos phb epos ehb && pInvTime p <= 0 = p'  -- Damage only if invincibility is over
+      | intersects ppos phb epos ehb && pInvTime p > 0  = p  -- No damage if invincibility is active
       | otherwise                    = p
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
@@ -117,19 +148,16 @@ playerVsEnemy e p = newp
     ehb@(MkHB _ eh) = htb ephys
     ephys           = physics (eType e)
     ent             = pType p
+
+    -- If the player is hit, handle damage logic and activate invincibility
     p'
-      | abs (px-ex) < abs (py-ey) && (py > ey) = p {pType = ent {physics = pphys {vel = (vx,500),gnd = GROUNDED}}}
-      -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
+      | abs (px-ex) < abs (py-ey) && (py > ey) = p {pType = ent {physics = pphys {vel = (vx,500), gnd = GROUNDED}}}
       | otherwise = damage
-    -- yup = (px,py+((ph/2)+(eh/2)-abs (py-ey)))
-    damage =
-      case pPower p of
-        -- SMALL -> kill p
-        -- _     -> p {pPower = SMALL}
-        SMALL
-          | pInvTime p <= 0 -> kill p       
-          | otherwise -> p                  
-        _ -> p {pPower = SMALL}             
+
+    damage = case pPower p of
+      SMALL | pInvTime p <= 0 -> kill p 
+      _ -> p {pPower = SMALL, pInvTime = 0.5}  
+     
 
 enemyVsPlayer :: Player -> Enemy -> Enemy
 enemyVsPlayer p e = newe

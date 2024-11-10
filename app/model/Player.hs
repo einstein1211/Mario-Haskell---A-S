@@ -30,7 +30,7 @@ data Player = MkPlayer
     ,   pPower :: Status
     ,   pJumpTime :: Float
     ,   pLives :: Float
-    ,   pInvTime :: Float --HERE
+    ,   pInvTime :: Float
     } deriving (Show,Eq)
 
 mario :: Player
@@ -40,7 +40,7 @@ mario = MkPlayer
     ,   pPower = SMALL
     ,   pJumpTime = 0
     ,   pLives = 1
-    ,   pInvTime = 2 --HERE
+    ,   pInvTime = 0
     }
 
 initPhysics :: Physics

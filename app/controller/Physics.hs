@@ -31,7 +31,7 @@ applyPhysics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate (pType obj), pJumpTime = pJumpTime obj - secs, pInvTime = pInvTime obj - secs} --HERE
+    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate (pType obj), pJumpTime = pJumpTime obj - secs, pInvTime = max 0 (pInvTime obj - secs)} --HERE
     enf obj = enemyPhysics gstate $ obj  {eType = applyPhysics' secs gstate (eType obj)}
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
