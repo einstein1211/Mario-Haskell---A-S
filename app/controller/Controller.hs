@@ -22,15 +22,6 @@ step secs gstate
   | isPaused gstate = return gstate
   | otherwise = return $ entityInteractions secs $ applyPhysics secs $ levelUpdate secs $ entityUpdate gstate { time = time gstate + secs }
 
---og input
--- input :: Event -> GameState -> IO GameState
--- input e gstate = case e of
---   EventKey (Char 's') Down _ _ | mode gstate == StartMenu -> return gstate { mode = Playing }
---   EventKey (Char 'q') Down _ _ | mode gstate == StartMenu -> exitSuccess
---   EventKey (Char 'p') Down _ _ | mode gstate == Playing   -> return gstate { isPaused = not (isPaused gstate) }
---   _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
---   _ -> return gstate
-
 input :: Event -> GameState -> IO GameState
 input e gstate = case e of
   -- Start menu actions
@@ -40,13 +31,6 @@ input e gstate = case e of
   EventKey (Char 'm') Down _ _ | isPaused gstate -> return gstate { mode = StartMenu, isPaused = False }
   _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
   _ -> return gstate
-
-
--- handleReturnToMenu :: Event -> GameState -> GameState
--- handleReturnToMenu (EventKey (Char 'm') Down _ _) gstate
---   | isPaused gstate = gstate { mode = StartMenu, isPaused = False }
--- handleReturnToMenu _ gstate = gstate
-
 
 resizeEvent :: Event -> GameState -> GameState
 resizeEvent (EventResize (x,y)) g = windowScaling (x,y) g
