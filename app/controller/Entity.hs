@@ -124,7 +124,7 @@ playerVsEnemy e p = newp
 
     damage = case pPower p of
       SMALL | pInvTime p <= 0 -> kill p 
-      _ -> p {pPower = SMALL, pInvTime = 0.5}  
+      _ -> p {pPower = SMALL, pInvTime = 0.7}  
      
 enemyVsPlayer :: Player -> Enemy -> Enemy
 enemyVsPlayer p e = newe
