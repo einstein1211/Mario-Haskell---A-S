@@ -21,6 +21,7 @@ data Item = NOITEM | MkItem
     -- ,   iPos :: GridIndex
     } deriving (Show,Eq)
 
+-- Make item functions, places item at given location
 makeMushroom :: Point -> Item
 makeMushroom (x,y) = MkItem
     {   iType = MkEntity
@@ -37,6 +38,7 @@ makeCoin (x,y) = MkItem
                 alive = ALIVE}
     }
 
+-- Initial physics for Items
 coinPhys :: Physics
 coinPhys = MkPhysics 
     {   pos = (0.0,0.0)

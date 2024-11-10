@@ -21,6 +21,7 @@ data Enemy = MkEnemy
     ,   eAI :: EnemyAI
     } deriving (Show,Eq)
 
+-- Enemy make functions, places enemy at given location
 makeGoomba :: Point -> Enemy
 makeGoomba (x,y) = MkEnemy
     {   eType = MkEntity 
@@ -39,24 +40,7 @@ makeKoopa (x,y) = MkEnemy
     ,   eAI = MEDIUM
     }
 
-goomba :: Enemy
-goomba = MkEnemy
-    {   eType = MkEntity {entity = MkEnemyType GOOMBA, physics = goombaPhys, alive = ALIVE}
-    ,   eAI = EASY
-    }
-
-goomba2 :: Enemy
-goomba2 = MkEnemy
-    {   eType = MkEntity {entity = MkEnemyType GOOMBA, physics = initPhysics3, alive = ALIVE}
-    ,   eAI = HARD
-    }
-
-koopa :: Enemy --edit
-koopa = MkEnemy 
-    {   eType = MkEntity {entity = MkEnemyType GRNKOOPA, physics = initPhysicsKoopa, alive = ALIVE}
-    ,   eAI = HARD
-    }
-
+-- Initial physics for Enemies
 goombaPhys :: Physics
 goombaPhys = MkPhysics
     {   pos = (0.0,0.0)
@@ -77,26 +61,4 @@ koopaPhys = MkPhysics
     ,   gnd = AIRBORNE
     ,   htb = MkHB 14 24   
     ,   dir = LEFT
-    }
-
-initPhysics3 :: Physics
-initPhysics3 = MkPhysics
-    {   pos = (-300.0,0.0)
-    ,   vel = (-200.0,300.0)
-    ,   mxv = (3000,3000)
-    ,   acc = (0.0,0.0)
-    ,   gnd = AIRBORNE
-    ,   htb = MkHB 14 16   
-    ,   dir = RIGHT
-    }
-
-initPhysicsKoopa :: Physics
-initPhysicsKoopa = MkPhysics
-    {   pos = (-500.0,0.0)
-    ,   vel = (-200.0,300.0)
-    ,   mxv = (3000,3000)
-    ,   acc = (0.0,0.0)
-    ,   gnd = AIRBORNE
-    ,   htb = MkHB 14 16   
-    ,   dir = RIGHT
     }

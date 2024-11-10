@@ -1,7 +1,6 @@
 module Model.Player where
 
 import Model.Basic
-import Graphics.Gloss
 
 data Movement   = STANDING | WALKING | CROUCHING | JUMPING -- | SKIDDING
     deriving (Show,Eq)
@@ -33,9 +32,10 @@ data Player = MkPlayer
     ,   pInvTime :: Float
     } deriving (Show,Eq)
 
+-- Data describing player 1
 mario :: Player
 mario = MkPlayer
-    {   pType = MkEntity {entity = MkPlayerType MARIO, physics = initPhysics, alive = ALIVE}
+    {   pType = MkEntity {entity = MkPlayerType MARIO, physics = marioPhysics , alive = ALIVE}
     ,   pMovement = STANDING
     ,   pPower = SMALL
     ,   pJumpTime = 0
@@ -43,9 +43,10 @@ mario = MkPlayer
     ,   pInvTime = 0
     }
 
-initPhysics :: Physics
-initPhysics = MkPhysics
-    {   pos = (-300.0,0.0)
+-- Initial physics for player 1
+marioPhysics :: Physics
+marioPhysics = MkPhysics
+    {   pos = makeGridPos (4,9) startScaling
     ,   vel = (0.0,3000.0)
     ,   mxv = (500,500)
     ,   acc = (0.0,0.0)

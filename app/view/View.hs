@@ -17,11 +17,12 @@ import qualified Data.Map as Map
 
 import Debug.Trace
 
+-- View function to add IO output
 view :: GameState -> IO Picture
 view g = do
-  -- putStrLn $ show $ pressedKeys g
   (return . viewPure) g
 
+-- Helper function that creates a Picture from the Image datatype
 imageToPicture :: Image -> Picture
 imageToPicture img =
   Bitmap $ bitmapDataOfByteString
@@ -41,6 +42,7 @@ animateFrames frames rate time =
         currentFrameIndex = floor (time * rate) `mod` frameCount
     in frames !! currentFrameIndex
 
+-- View pure function that governs all showable content
 viewPure :: GameState -> Picture
 viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode = gameMode} =
   case gameMode of
@@ -53,7 +55,6 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
                   [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
       where
         gameElements = viewScore g : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewItem g (items g) ++ viewPlatform g platfrms ++ viewBlock g blocks 
-        -- gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
         blocks    = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
         platfrms  = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
         -- Pause
@@ -81,7 +82,7 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
         scoreText = color white $ translate (-400) 100 $ scale 0.5 0.5 (text ("Your final score is " ++ show (score g)))
         exitText = color white $ translate (-350) (-100) $ scale 0.5 0.5 (text "Thanks for playing!") 
 
-
+-- View score helper function that show the score on screen
 viewScore :: GameState -> Picture
 viewScore g@MkGameState {score = sc} =
   color white $ scale 0.3 0.3 $ (translate x y (text ("Score: " ++ show sc)))
@@ -89,6 +90,7 @@ viewScore g@MkGameState {score = sc} =
     x = fromIntegral (fst res) * (-1.5)
     y = fromIntegral (snd res) * (1.5)
 
+-- View player helper function that converts Players to Pictures
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
 viewPlayer g (pl:pls) =
@@ -107,7 +109,6 @@ viewPlayer g (pl:pls) =
         | pMovement pl == WALKING = animateFrames walk 10 $ time g
         | pMovement pl == CROUCHING = crouch
         | otherwise = stand
-      -- framesWalking = [mariof1, mariof2, mariof3]
       bmp
         | dir phys == LEFT = uncurry translate (pos phys)$ flipPicture $ Scale s s $ imageToPicture img
         | otherwise        = uncurry translate (pos phys)$ Scale s s $ imageToPicture img
@@ -118,14 +119,15 @@ viewPlayer g (pl:pls) =
       MkHB w h = htb $ physics $ pType pl
       s = entityScale g
 
+-- Helper function to flip a picture from left to right
 flipPicture :: Picture -> Picture
 flipPicture = Scale (-1) 1
 
+-- View enemy helper function that converts Enemies to Pictures
 viewEnemy :: GameState -> [Enemy] -> [Picture]
 viewEnemy _ [] = [blank]
 viewEnemy g (en:ens) = bmp : hbox : viewEnemy g ens
   where
-      -- FIXME: DA HEK IS GOING ON HERE 
       phys = physics (eType en)
       img =
           case entity (eType en) of
@@ -144,6 +146,7 @@ viewEnemy g (en:ens) = bmp : hbox : viewEnemy g ens
       MkHB w h = htb $ physics $ eType en
       s = entityScale g
 
+-- View item helper function that converts Items to Pictures
 viewItem :: GameState -> [Item] -> [Picture]
 viewItem _ [] = [blank]
 viewItem g (it:its) = bmp : viewItem g its
@@ -164,6 +167,7 @@ viewItem g (it:its) = bmp : viewItem g its
       s = entityScale g
       ws = windowScale g
 
+-- View platform helper function that converts Platforms to Pictures
 viewPlatform :: GameState -> [Platform] -> [Picture]
 viewPlatform _ [] = [blank]
 viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
@@ -190,6 +194,7 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
     es = entityScale g
     ws = windowScale g
 
+-- View block helper function that converts Blocks to Pictures
 viewBlock :: GameState -> [Block] -> [Picture]
 viewBlock _ [] = [blank]
 viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks

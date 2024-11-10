@@ -14,25 +14,31 @@ import View.Scaling
 import Debug.Trace
 import qualified Data.Map as Map
 
+-- Entitiy update function, handles updates to entities such as: 
+-- check whether entity lives, 
+-- check if an entity should spawn, 
+-- check if an entity should move with the window
 entityUpdate :: GameState -> GameState
 entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
   where
     windowShift gs
+    -- Once the sliding window shifts, load new enemies into the enemy list
       | not (windowShifted gs) =
         gs {
           enemies = enemies gs ++ map (scaleTo es) (Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
-          slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty (slidingWindow gs),
+          slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries PlayerEntry c) ac) Map.empty $ Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty (slidingWindow gs),
           windowShifted = True
           }
       | otherwise = gs
+    -- Filter dead entities out of their respective lists
     filterAlive gs =
       gs {
+        -- If an item of enemy is killed, update the score
         score = score g + (length (filter (not.isAlive) (enemies gs)) * 100) + (length (filter (not.isAlive) (items gs)) * 100),
         players = filter isAlive (map (playerState es) (players gs)),
         enemies  = filter isAlive (enemies gs),
         items    = filter isAlive (items gs),
         slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkAlive c) ac) Map.empty (slidingWindow gs)
-        -- blocks   = filter isAlive (blocks gs)
         }
     checkAlive (MkColumn tiles) = MkColumn $ foldr f [] tiles
       where
@@ -40,6 +46,7 @@ entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
           | isAlive b = t : ac
           | otherwise = MkTile s NoChunk : ac
         f t ac = t : ac
+    -- If an item is spawned, load it into the items list, erase it from the sliding window afterwards
     filterSpawn gs =
       gs {
         items = items gs ++ map (scaleTo es) (Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
@@ -58,9 +65,10 @@ entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
     es = entityScale g
     ws = windowScale g
 
-deleteEntriesFromWindow :: Level -> Level
-deleteEntriesFromWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty
+-- deleteEntriesFromWindow :: Level -> Level
+-- deleteEntriesFromWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty
 
+-- Checks what type of movement the player is in and updates the parameters
 playerState :: Scaling -> Player -> Player
 playerState s p = p'
   where
@@ -82,13 +90,13 @@ playerState s p = p'
       case pPower p of
         SMALL -> MkHB 12 16
         BIG   -> MkHB 16 22
-
-    p' -- FIX ME
+    p' 
       | not grounded                      = scaleTo s p {pMovement = JUMPING, pType= typ {physics = phys {htb = htbJump}}}
       | pMovement p == CROUCHING          = scaleTo s p {pMovement = CROUCHING, pType= typ {physics = phys {htb = htbCrouch}}}
       | vx==0                             = scaleTo s p {pMovement = STANDING, pType= typ {physics = phys {htb = htbGround}}}
       | otherwise                         = scaleTo s p {pMovement = WALKING, pType= typ {physics = phys {htb = htbGround}}}
 
+-- Check per enemy type the interactions that can occur
 entityInteractions :: Float -> GameState -> GameState
 entityInteractions s g =
   g {
@@ -96,7 +104,6 @@ entityInteractions s g =
     enemies = map evp (map eve (enemies g)),
     items   = map ivp (items g),
     slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (bvp c) ac) Map.empty (slidingWindow g)
-    -- blocks  = map bvp (blocks g)
   }
   where
     pve p = foldr playerVsEnemy p (enemies g)
@@ -104,20 +111,14 @@ entityInteractions s g =
     evp e = foldr enemyVsPlayer e (players g)
     eve e = foldr enemyVsEnemy e (filter (/=e) (enemies g))
     ivp i = foldr (itemVsPlayer (windowScale g)) i (players g)
-    -- bvp b = foldr (blockVsPlayer (windowScale g)) b (players g) 
     bvp :: Column -> Column --Block vs Player interactions
     bvp (MkColumn tiles) = MkColumn $ foldr f [] tiles
       where
         f (MkTile spawn (MkBlkChunk b)) ac = MkTile spawn (MkBlkChunk (bvp' b)) : ac
         f t ac = t : ac
         bvp' b = foldr (blockVsPlayer g) b (players g)
-    -- bvp (MkColumn []) = MkColumn []
-    -- bvp (MkColumn (t@(MkTile s (MkBlkChunk b) i):ts)) = 
-    --   MkColumn $ (MkTile s (MkBlkChunk (foldr (blockVsPlayer (windowScale g)) b (players g))) i) : bvp (MkColumn ts)
-    -- bvp (MkColumn (t:ts)) = MkColumn $ t : bvp (MkColumn ts)
-      -- where
-      --   f c ac = (blockVsPlayer (windowScale g))
 
+-- Handles a player when they hit an enemy
 playerVsEnemy :: Enemy -> Player -> Player
 playerVsEnemy e p = newp
   where
@@ -142,6 +143,7 @@ playerVsEnemy e p = newp
       SMALL | pInvTime p <= 0 -> kill p 
       _ -> p {pPower = SMALL, pInvTime = 0.7}  
      
+-- Handles an enemy once they are hit by a player
 enemyVsPlayer :: Player -> Enemy -> Enemy
 enemyVsPlayer p e = newe
   where
@@ -159,9 +161,9 @@ enemyVsPlayer p e = newe
     ent             = eType e
     e'
       | abs (px-ex) < abs (py-ey) && (py > ey) = kill e
-      -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
 
+-- Handles enemy colissions, so they turn around
 enemyVsEnemy :: Enemy -> Enemy -> Enemy
 enemyVsEnemy e2 e1 = newe
   where
@@ -185,6 +187,7 @@ enemyVsEnemy e2 e1 = newe
         MEDIUM  -> 175
         HARD    -> 200
 
+-- Handles a player when they collect an item
 playerVsItem :: Scaling -> Item -> Player -> Player
 playerVsItem s i p = newp
   where
@@ -206,6 +209,7 @@ playerVsItem s i p = newp
         MkItemType MUSHROOM -> if pPower p == SMALL then p {pPower = BIG} else p
         _                   -> p
 
+-- Handles an item once it is collected by a player
 itemVsPlayer :: Scaling -> Player -> Item -> Item
 itemVsPlayer s p i = newi
   where
@@ -223,6 +227,7 @@ itemVsPlayer s p i = newi
     iphys           = physics ent
     ent             = iType i
 
+-- Handles blocks that are hit by the player
 blockVsPlayer :: GameState -> Player -> Block -> Block
 blockVsPlayer g p b =
   newb
@@ -242,19 +247,18 @@ blockVsPlayer g p b =
     b'
       | abs (px-bx) < abs (py-by) && (py < by) && hidden && vy > 0 = hit
       | abs (px-bx) < abs (py-by) && (py < by) && not hidden = hit
-      -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =
       case bContents b of
         NOITEM ->
           case bType b of
-            BRICK       -> kill b
+            BRICK       -> if pPower p == BIG then kill b else b
             QBLOCK      -> b {bType = EMPTYBLOCK}
             EMPTYBLOCK  -> b
             HIDDENBLOCK -> b {bType = EMPTYBLOCK}
         _      ->
           case bType b of
-            BRICK       -> kill b {bSpawn = True}
+            BRICK       -> if pPower p == BIG then kill b {bSpawn = True} else b
             QBLOCK      -> b {bType = EMPTYBLOCK, bSpawn = True}
             EMPTYBLOCK  -> b
             HIDDENBLOCK -> b {bType = EMPTYBLOCK, bSpawn = True}

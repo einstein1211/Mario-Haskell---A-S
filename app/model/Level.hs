@@ -7,17 +7,15 @@ import Model.Enemy
 import Model.Item
 import Model.Block
 import Model.Platform
-import View.Scaling
 import Graphics.Gloss
-import Debug.Trace
 
 import qualified Data.Map as Map
 
+-- Datatypes of level design, level is made up of columns, columns are made up of tiles
 data Spawn = MkPlSpawn Player | MkEnSpawn Enemy | MkItSpawn Item | NoSpawn
     deriving (Eq)
 data Chunk = MkBlkChunk Block | MkPltChunk Platform | NoChunk
     deriving (Eq)
--- type TileNumber = Int
 data Tile = MkTile Spawn Chunk
     deriving (Eq)
 newtype Column = MkColumn [Tile]
@@ -127,6 +125,7 @@ instance ColumnFunctions Item where
       f (MkTile (MkItSpawn i) _) ac = i:ac
       f _ ac = ac
 
+-- Function to delete certain entries from column, used when an enemy or item has been spawned
 deleteEntries :: Entry -> Column -> Column
 deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
     where
@@ -134,8 +133,6 @@ deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
             PlayerEntry  -> plf
             EnemyEntry   -> enf
             ItemEntry    -> itf
-            -- Block   -> blf
-            -- Platform-> pltf
         plf (MkTile (MkPlSpawn _) chunk) ac = MkTile NoSpawn chunk:ac
         plf c ac = c:ac
         enf (MkTile (MkEnSpawn _) chunk) ac = MkTile NoSpawn chunk:ac
@@ -146,21 +143,13 @@ deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
 emptyTile :: Tile
 emptyTile = MkTile NoSpawn NoChunk
 
-testColumn :: Column
-testColumn = standardColumn 0
-
 list :: [Int]
 list = [0..11]
 
 emptyColumn :: Column
 emptyColumn = foldl (flip addToColumn) (MkColumn []) list
 
-dirtColumn :: Column
-dirtColumn = foldl addDirt emptyColumn list
-  where
-    addDirt ac c = addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (grid c)))) ac
-    grid x = makeGridPos (0,fromIntegral x) 4
-
+-- Many Column functions, to place a column filled with blocks, platforms, enemies and items at a certain index in the level
 standardColumn :: ColumnNumber -> Column
 standardColumn cn =
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,10) startScaling))))
@@ -333,13 +322,12 @@ flagpoleColumn cn =
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,8) startScaling)))) $
   addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
-testLevel :: Level
-testLevel = f 255 Map.empty
+-- Level map made up of columns inserted into the right spots
+level1 :: Level
+level1 = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
-      -- | x == 5 = f (x-1) (Map.insert x (flagpoleColumn x) m)
-      -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 22 = f (x-1) (Map.insert x (mushroomColumn x) m)
@@ -426,8 +414,6 @@ testLevel = f 255 Map.empty
       | x == 202 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
--- initialWindow :: [Column]
--- initialWindow = Map.foldr (:) [] (Map.take 22 testLevel)
-
+-- Starting sliding window, takes 20 columns, 16 of which are visible
 initialWindow :: Level
-initialWindow = Map.take 20 testLevel
+initialWindow = Map.take 20 level1

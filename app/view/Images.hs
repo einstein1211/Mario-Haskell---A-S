@@ -1,11 +1,15 @@
 module View.Images where
 
 import Data.ByteString as BS
-import Model.Basic ( Hitbox(..) )
+import Model.Basic
 
 imghitbox :: Hitbox
 imghitbox = MkHB 16 16
 
+-- |This file contains all images converted from bitmaps to bytestrings in RGBA8 format
+-- |This is done so no IO call needed to be made in the view functions
+
+-- Image datatype
 data Image = MkImage
     {   hitbox :: Hitbox 
     ,   bytestring :: ByteString

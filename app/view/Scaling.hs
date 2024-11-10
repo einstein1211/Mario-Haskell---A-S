@@ -15,6 +15,7 @@ windowToRatio s = scale s s
 imgscale :: Float
 imgscale = 4
 
+-- Class to govern how scaling the hitbox of an entity should work
 class Scale a where
   scaleTo :: Float -> a -> a
 
@@ -50,5 +51,6 @@ instance Scale Platform where
     where
       hitbox= pfHitbox platform
 
+-- Helper function to scale a hitbox
 hitboxScale :: Hitbox -> Float -> Hitbox
 hitboxScale (MkHB w h) s = MkHB (w*s) (h*s)

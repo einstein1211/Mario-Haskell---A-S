@@ -16,10 +16,7 @@ instance PhysicsFunctions Block where
     moveBy offset b@MkBlock {bPlatform = p} = b{bPlatform = moveBy offset p}
     kill b = b {bAlive = DEAD}
 
--- instance GridIndexFunctions Block where
---     changeGridIndex grd b@(MkBlock _ pl _ _) = b {bPlatform = pl {pfPos = grd}}
---     getGridIndex b = pfPos $ bPlatform b
-
+-- Block datatype, holds the item it can contain as contents
 data Block = MkBlock
     {   bType :: BlockType
     ,   bPlatform :: Platform
@@ -27,35 +24,3 @@ data Block = MkBlock
     ,   bContents :: Item
     ,   bSpawn :: Bool
     } deriving (Show,Eq)
-
--- brick :: Block
--- brick = MkBlock
---     {   bType = BRICK
---     ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (2,6) 4}
---     ,   bAlive = ALIVE
---     ,   bContents = NOITEM
---     }
-
--- qblock :: Block
--- qblock = MkBlock
---     {   bType = QBLOCK
---     ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (12,6) 4}
---     ,   bAlive = ALIVE
---     ,   bContents = NOITEM
---     }
-
--- empblock :: Block
--- empblock = MkBlock
---     {   bType = EMPTYBLOCK
---     ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (4,6) 4}
---     ,   bAlive = ALIVE
---     ,   bContents = NOITEM
---     }
-
--- hidblock :: Block
--- hidblock = MkBlock
---     {   bType = HIDDENBLOCK
---     ,   bPlatform = MkPlatform {pfType = BLOCK, pfHitbox = blockhb, pfPos = makeGridPos (5,6) 4}
---     ,   bAlive = ALIVE
---     ,   bContents = NOITEM
---     }

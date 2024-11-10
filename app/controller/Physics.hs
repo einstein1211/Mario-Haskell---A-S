@@ -10,20 +10,22 @@ import Model.Platform
 import Model.Level
 import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
-import Data.Bifunctor
-import Debug.Trace
 
 import qualified Data.Map as Map
 
+-- Static value for gravity
 grav :: Float
 grav = -2000
 
+-- Maximum fallspeed for entities
 fallspd :: Float
 fallspd = -3000
 
+-- Friction experienced by the player on the ground
 friction :: Float
 friction = 0.9
 
+-- Function that applies the helper function to all entities currently loaded
 applyPhysics :: Float -> GameState -> GameState
 applyPhysics secs gstate =
   gstate {
@@ -36,6 +38,7 @@ applyPhysics secs gstate =
     enf obj = enemyPhysics gstate $ obj  {eType = applyPhysics' secs gstate (eType obj)}
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
+-- Physics function that applies the logical velocity and acceleration as well as several environmental checks
 applyPhysics' :: Float -> GameState -> Entity -> Entity
 applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
   where
@@ -59,6 +62,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     p' = p {pos = (x',y'), vel = (vx',vy')}                     
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
+-- Physics function for the player, so the player responds to user input
 playerPhysics :: GameState -> Player -> Player
 playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
   where
@@ -112,14 +116,15 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | right   = RIGHT
       | otherwise = dir phys
 
+-- Physics for the enemies according to their AI level
 enemyPhysics :: GameState -> Enemy -> Enemy
 enemyPhysics g en = en {eType = ent {physics = phys'}}
   where
     ent = eType en
     phys = physics ent
     phys' = phys {vel = vel',dir = dir'}
-    (px,py) = getPos (head (players g))
-    (x,y) = getPos en
+    (px,_) = getPos (head (players g))
+    (x,_) = getPos en
     (vx,vy) = getVel en
     dir'
       | vx > 0 = RIGHT
@@ -136,6 +141,7 @@ enemyPhysics g en = en {eType = ent {physics = phys'}}
         MEDIUM  -> 175
         HARD    -> 200
 
+-- Checks the max speed of an entity and makes sure it does not go over
 maxSpdCheck :: Entity -> Entity
 maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
   where
@@ -148,13 +154,14 @@ maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
         | vy < (-mvy) = -mvy
         | otherwise = vy
 
+-- Checks if a point is located within a hitbox
 inHitbox :: Point -> Point -> Hitbox -> Bool
 inHitbox (x1,y1) (x2,y2) (MkHB w h) = x1>=lp && y1>=bp && x1<=rp && y1<=tp
   where
     (lp,rp) = (x2-(w/2),x2+(w/2))
     (bp,tp) = (y2-(h/2),y2+(h/2))
---BUG: not bouncing off underside of blocks
 
+-- Checks whether two hitboxes intersect
 intersects :: Point -> Hitbox -> Point -> Hitbox -> Bool
 intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =
   inHitbox c1 p2 hb2 || inHitbox c2 p2 hb2 || inHitbox c3 p2 hb2 || inHitbox c4 p2 hb2
@@ -169,8 +176,8 @@ intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =
       c7 = (x2+(w2/2),y2-(h2/2))
       c8 = (x2-(w2/2),y2-(h2/2))
 
+-- Checks if an entity is in contact with a block
 blockCheck :: GameState -> Entity -> Entity
--- blockCheck g e@(MkEntity _ p _) = Map.foldr f e {physics = p {gnd=AIRBORNE}} (slidingWindow g)
 blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
     blks = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
@@ -199,6 +206,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
         xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))-1,oy)
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
+-- Checks whether an entity is in contact with a platform
 platformCheck :: GameState -> Entity -> Entity
 platformCheck g e = foldr platformCheck' e plats
   where
@@ -228,22 +236,11 @@ platformCheck g e = foldr platformCheck' e plats
         xleft = (ox-((ow/2)+(pw/2)-abs (ox-px))-1,oy)
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
-collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
+-- Checks whether an entity has gone out of bounds
+collisionCheck :: Entity -> Entity 
 collisionCheck e@(MkEntity _ p _)
   | killboundary = kill e
-  | otherwise = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
+  | otherwise = e
   where
     (x,y)   = pos p
-    (vx,vy) = vel p
-    (ax,ay) = acc p
-    g       = gnd p
-    w = (\(MkHB c d) -> c) (htb p)
-    (l,r) = (x-(w/2),x+(w/2))
-    (vx',ax') = (vx,ax)-- if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
     killboundary = x < (-((fromIntegral (fst res))*0.5) - 100) || y < (-((fromIntegral (snd res))*0.5))
-    x' = x
-      -- | r > fst uppbound = x-1
-      -- | l < fst lowbound = x+1
-      -- | otherwise = x
-
--- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)
