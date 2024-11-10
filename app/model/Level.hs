@@ -336,7 +336,7 @@ testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
-      | x == 5 = f (x-1) (Map.insert x (flagpoleColumn x) m)
+      -- | x == 5 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
