@@ -11,6 +11,7 @@ import Model.Level
 import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 import Data.Bifunctor
+import Debug.Trace
 
 import qualified Data.Map as Map
 
@@ -31,8 +32,8 @@ applyPhysics secs gstate =
     items   = map itf (items gstate)
     }
   where
-    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate (pType obj), pJumpTime = pJumpTime obj - secs}
-    enf obj = obj  {eType = applyPhysics' secs gstate (eType obj)}
+    plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate (pType obj), pJumpTime = pJumpTime obj - secs, pInvTime = max 0 (pInvTime obj - secs)} --HERE
+    enf obj = enemyPhysics gstate $ obj  {eType = applyPhysics' secs gstate (eType obj)}
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
 applyPhysics' :: Float -> GameState -> Entity -> Entity
@@ -45,7 +46,8 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     x'  = x   + vx*s
     y'  = y   + vy*s
     enttype = entity e
-    vx' --BUG: Makes you get stuck on walls 
+    vx' = if enttype == MkPlayerType MARIO then vxpl' else vx
+    vxpl'
       | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
@@ -54,9 +56,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
       | grounded && vy<0  = 0
       | grounded && vy==0 = vy + ay*s
       | otherwise         = vy + (ay+grav)*s
-    p'
-      | enttype == MkItemType MUSHROOM = p {pos = (x',y'), vel = (vx,vy')}
-      | otherwise                      = p {pos = (x',y'), vel = (vx',vy')}
+    p' = p {pos = (x',y'), vel = (vx',vy')}                     
     checks k = maxSpdCheck $ collisionCheck $ platformCheck g $ blockCheck g k
 
 playerPhysics :: GameState -> Player -> Player
@@ -112,6 +112,30 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | right   = RIGHT
       | otherwise = dir phys
 
+enemyPhysics :: GameState -> Enemy -> Enemy
+enemyPhysics g en = en {eType = ent {physics = phys'}}
+  where
+    ent = eType en
+    phys = physics ent
+    phys' = phys {vel = vel',dir = dir'}
+    (px,py) = getPos (head (players g))
+    (x,y) = getPos en
+    (vx,vy) = getVel en
+    dir'
+      | vx > 0 = RIGHT
+      | otherwise = LEFT
+    vel'
+      | eAI en /= EASY && px > x     = (speed,vy)
+      | eAI en /= EASY && px < x     = (-speed,vy)
+      | vx == 0 && dir phys == RIGHT = (-speed,vy)
+      | vx == 0 && dir phys == LEFT  = (speed,vy)
+      | otherwise = (vx,vy)
+    speed =
+      case eAI en of
+        EASY    -> 150
+        MEDIUM  -> 175
+        HARD    -> 200
+
 maxSpdCheck :: Entity -> Entity
 maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
   where
@@ -151,7 +175,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
   where
     blks = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     blockCheck' :: Block -> Entity -> Entity
-    blockCheck' (MkBlock typ plt _ _) (MkEntity _ obj _)
+    blockCheck' (MkBlock typ plt _ _ _) (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
@@ -181,6 +205,7 @@ platformCheck g e = foldr platformCheck' e plats
     plats = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     platformCheck' ::  Platform -> Entity -> Entity
     platformCheck' plt (MkEntity _ obj _)
+      | intersects opos ohb ppos phb && flagpole = e
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
@@ -190,6 +215,7 @@ platformCheck g e = foldr platformCheck' e plats
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
         phb@(MkHB pw ph) = pfHitbox plt
+        flagpole = pfType plt == FLAGPOLE || pfType plt == FLAGTOP
         obj'
           | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}
@@ -203,8 +229,8 @@ platformCheck g e = foldr platformCheck' e plats
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
 collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck e@(MkEntity _ p _) 
-  | killboundary = kill e 
+collisionCheck e@(MkEntity _ p _)
+  | killboundary = kill e
   | otherwise = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
   where
     (x,y)   = pos p
@@ -213,7 +239,7 @@ collisionCheck e@(MkEntity _ p _)
     g       = gnd p
     w = (\(MkHB c d) -> c) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
-    (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
+    (vx',ax') = (vx,ax)-- if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
     killboundary = x < (-((fromIntegral (fst res))*0.5) - 100) || y < (-((fromIntegral (snd res))*0.5))
     x' = x
       -- | r > fst uppbound = x-1
