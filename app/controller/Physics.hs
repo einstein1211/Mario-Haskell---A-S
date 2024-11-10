@@ -11,6 +11,7 @@ import Model.Level
 import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 import Data.Bifunctor
+import Debug.Trace
 
 import qualified Data.Map as Map
 
@@ -204,6 +205,7 @@ platformCheck g e = foldr platformCheck' e plats
     plats = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     platformCheck' ::  Platform -> Entity -> Entity
     platformCheck' plt (MkEntity _ obj _)
+      | intersects opos ohb ppos phb && flagpole = e
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
@@ -213,6 +215,7 @@ platformCheck g e = foldr platformCheck' e plats
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
         phb@(MkHB pw ph) = pfHitbox plt
+        flagpole = pfType plt == FLAGPOLE || pfType plt == FLAGTOP
         obj'
           | abs (ox-px)>abs (oy-py) = sides
           | oy < py               = obj {pos = ydown, vel = (vx,-vy), acc = (ax,0)}

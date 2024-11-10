@@ -18,14 +18,14 @@ entityUpdate :: GameState -> GameState
 entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
   where
     windowShift gs
-      | not (windowShifted gs) = -- trace "window shifted"
+      | not (windowShifted gs) =
         gs {
           enemies = enemies gs ++ map (scaleTo es) (Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
           slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty (slidingWindow gs),
           windowShifted = True
           }
       | otherwise = gs
-    filterAlive gs = trace (show (score gs))
+    filterAlive gs =
       gs {
         score = score g + (length (filter (not.isAlive) (enemies gs)) * 100) + (length (filter (not.isAlive) (items gs)) * 100),
         players = filter isAlive (map (playerState es) (players gs)),

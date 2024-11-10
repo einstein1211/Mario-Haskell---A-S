@@ -292,39 +292,51 @@ stairColumn5 cn =
 
 stairColumn6 :: ColumnNumber -> Column
 stairColumn6 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 stairColumn7 :: ColumnNumber -> Column
 stairColumn7 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 stairColumn8 :: ColumnNumber -> Column
 stairColumn8 cn =
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,2) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
-    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,2) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+flagpoleColumn :: ColumnNumber -> Column
+flagpoleColumn cn =
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGTOP platformHB (makeGridPos (cn,2) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,3) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,4) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,5) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,6) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,7) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform FLAGPOLE platformHB (makeGridPos (cn,8) startScaling)))) $
+  addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 testLevel :: Level
 testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
+      | x == 5 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
@@ -409,7 +421,7 @@ testLevel = f 255 Map.empty
       | x == 191 = f (x-1) (Map.insert x (stairColumn7 x) m)
       | x == 192 = f (x-1) (Map.insert x (stairColumn8 x) m)
       | x == 193 = f (x-1) (Map.insert x (stairColumn8 x) m)
-    --   | x == 202 = f (x-1) (Map.insert x (flagColumn x) m)
+      | x == 202 = f (x-1) (Map.insert x (flagpoleColumn x) m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
 -- initialWindow :: [Column]
