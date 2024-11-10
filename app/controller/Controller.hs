@@ -11,12 +11,22 @@ import Graphics.Gloss.Interface.IO.Game
 import System.Exit (exitSuccess)
 import Debug.Trace (trace)
 import Control.Concurrent (threadDelay)
+import System.IO (writeFile, appendFile)
 
 
 -- trace :: String -> a -> a
 
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
+
+
+
+-- Write the score to a text file
+writeScore :: Int -> IO ()
+writeScore score = do
+    -- Open the file for appending (create if it doesn't exist)
+    appendFile "score.txt" (show score ++ "\n")
+
 
 -- Non debug step
 step :: Float -> GameState -> IO GameState
@@ -25,6 +35,7 @@ step secs gstate
   | isPaused gstate = return gstate
   | not (any isAlive (players gstate)) && mode gstate == Playing = return gstate {mode = Exiting}
   | mode gstate == Exiting = do
+      writeScore (score gstate)
       putStrLn $ "Thanks for playing! Your final score is " ++ show (score gstate)
       threadDelay 3000000
       exitSuccess
