@@ -45,7 +45,8 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     x'  = x   + vx*s
     y'  = y   + vy*s
     enttype = entity e
-    vx' --BUG: Makes you get stuck on walls 
+    vx' = if enttype == MkPlayerType MARIO then vxpl' else vx
+    vxpl' 
       | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
@@ -213,7 +214,7 @@ collisionCheck e@(MkEntity _ p _)
     g       = gnd p
     w = (\(MkHB c d) -> c) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
-    (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
+    (vx',ax') = (vx,ax)-- if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
     killboundary = x < (-((fromIntegral (fst res))*0.5) - 100) || y < (-((fromIntegral (snd res))*0.5))
     x' = x
       -- | r > fst uppbound = x-1

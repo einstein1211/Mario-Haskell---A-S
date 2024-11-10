@@ -21,6 +21,8 @@ data IsGrounded = GROUNDED | AIRBORNE
 data Direction  = RIGHT | LEFT
     deriving(Show,Eq)
 
+data Entry        = PlayerEntry | EnemyEntry | ItemEntry | BlockEntry | PlatformEntry
+    deriving (Enum)
 data PlayerType   = MARIO | LUIGI
     deriving (Show,Eq)
 data EnemyType   = GOOMBA| GRNKOOPA  | REDKOOPA | SPINY | PIRANHA

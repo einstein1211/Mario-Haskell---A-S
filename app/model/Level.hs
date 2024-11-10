@@ -9,6 +9,7 @@ import Model.Block
 import Model.Platform
 import View.Scaling
 import Graphics.Gloss
+import Debug.Trace
 
 import qualified Data.Map as Map
 
@@ -46,7 +47,7 @@ instance PhysicsFunctions Column where
 
 instance PhysicsFunctions Tile where
     moveBy :: (Float,Float) -> Tile -> Tile
-    moveBy offset t@(MkTile s chunk) = MkTile s (moveBy offset chunk)
+    moveBy offset t@(MkTile spawn chunk) = MkTile (moveBy offset spawn) (moveBy offset chunk)
 
 instance PhysicsFunctions Chunk where
     getPos :: Chunk -> Point
@@ -57,14 +58,23 @@ instance PhysicsFunctions Chunk where
     moveBy offset (MkPltChunk p) = MkPltChunk $ moveBy offset p
     moveBy _ c = c
 
+instance PhysicsFunctions Spawn where
+    moveBy offset (MkEnSpawn e) = MkEnSpawn $ moveBy offset e
+    moveBy offset s = s
+
 class ColumnFunctions a where
     addToColumn :: a -> Column -> Column
     getEntries :: Column -> [a]
+    -- deleteEntries :: a -> Column -> Column
 
 instance ColumnFunctions Tile where
     addToColumn :: Tile -> Column -> Column
-    addToColumn (MkTile _ (MkBlkChunk b)) = addToColumn b
-    addToColumn (MkTile _ (MkPltChunk p)) = addToColumn p
+    addToColumn (MkTile _ (MkBlkChunk b)) c = addToColumn b c
+    addToColumn (MkTile _ (MkPltChunk p)) c = addToColumn p c
+    -- addToColumn (MkTile (MkPlSpawn p) _)  c = addToColumn p c
+    addToColumn (MkTile (MkEnSpawn e) _)  c = addToColumn e c
+    -- addToColumn (MkTile (MkItSpawn i) _)  c = addToColumn i c
+    addToColumn _ c = c 
 
 instance ColumnFunctions Int where
     addToColumn :: Int -> Column -> Column
@@ -85,7 +95,7 @@ instance ColumnFunctions Block where
 
 instance ColumnFunctions Platform where
     addToColumn :: Platform -> Column -> Column
-    addToColumn p@(MkPlatform _ _ (_,y)) (MkColumn tiles)  = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
+    addToColumn p@MkPlatform {pfPos = (_,y)} (MkColumn tiles)  = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
         where
             bf ypos' (MkTile _ chunk) = snd (getPos chunk) < ypos'
             af ypos' (MkTile _ chunk) = snd (getPos chunk) > ypos'
@@ -96,20 +106,36 @@ instance ColumnFunctions Platform where
             f (MkTile _ (MkPltChunk p)) ac = p:ac
             f _ ac = ac
 
--- instance GridIndexFunctions Column where
---     changeGridIndex grd (MkColumn tiles) = MkColumn $ map (changeGridIndex grd) tiles
+instance ColumnFunctions Enemy where
+    addToColumn :: Enemy -> Column -> Column
+    addToColumn e (MkColumn tiles) = MkColumn (filter (bf y) tiles ++ t : filter (af y) tiles)
+        where
+            y = snd (getPos e)
+            bf ypos' (MkTile _ chunk) = snd (getPos chunk) < ypos'
+            af ypos' (MkTile _ chunk) = snd (getPos chunk) > ypos'
+            t = MkTile (MkEnSpawn e) NoChunk
+    getEntries :: Column -> [Enemy]
+    getEntries (MkColumn tiles) = foldr f [] tiles
+        where
+            f (MkTile (MkEnSpawn e) _) ac = e:ac
+            f _ ac = ac
 
--- instance GridIndexFunctions Tile where
---     changeGridIndex (MkGrid x y) (MkTile spawn chunk i) = MkTile spawn (changeGridIndex (MkGrid x i) chunk) i
---     getGridIndex (MkTile _ chunk _) = getGridIndex chunk
-
--- instance GridIndexFunctions Chunk where
---     changeGridIndex grd (MkBlkChunk b) = MkBlkChunk (changeGridIndex grd b)
---     changeGridIndex grd (MkPltChunk p) = MkPltChunk (changeGridIndex grd p)
---     changeGridIndex _ c = c
---     getGridIndex (MkBlkChunk b) = getGridIndex b
---     getGridIndex (MkPltChunk p) = getGridIndex p
---     getGridIndex _ = MkGrid 0 0
+deleteEntries :: Entry -> Column -> Column
+deleteEntries entry (MkColumn tiles) = MkColumn $ foldr f [] tiles
+    where
+        f = case entry of
+            PlayerEntry  -> plf
+            EnemyEntry   -> enf
+            ItemEntry    -> itf
+            -- Block   -> blf
+            -- Platform-> pltf
+        plf (MkTile (MkPlSpawn _) _) ac = t:ac
+        plf c ac = c:ac
+        enf (MkTile (MkEnSpawn _) _) ac = trace "enemies deleted" t:ac
+        enf c ac = c:ac
+        itf (MkTile (MkItSpawn _) _) ac = t:ac
+        itf c ac = c:ac
+        t = MkTile NoSpawn NoChunk
 
 emptyTile :: Tile
 emptyTile = MkTile NoSpawn NoChunk
@@ -133,6 +159,20 @@ standardColumn :: ColumnNumber -> Column
 standardColumn cn =
     addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,10) startScaling))))
     $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform DIRT platformHB (makeGridPos (cn,11) startScaling)))) emptyColumn
+
+goombaColumn :: ColumnNumber -> Column
+goombaColumn cn =
+    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) (standardColumn cn)
+
+goombaColumn2 :: ColumnNumber -> Column
+goombaColumn2 cn =
+    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,1) startScaling))) NoChunk) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
+
+goombaColumn3 :: ColumnNumber -> Column
+goombaColumn3 cn =
+    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) (standardColumn cn)
 
 pipeColumnL :: ColumnNumber -> Column
 pipeColumnL cn =
@@ -190,6 +230,7 @@ brickColumn cn =
 
 brickColumn2 :: ColumnNumber -> Column
 brickColumn2 cn =
+    addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM))) $
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM))) (standardColumn cn)
 
@@ -270,6 +311,7 @@ testLevel = f 255 Map.empty
   where
     f x m
       | x <= -2 = Map.insert (-2) (standardColumn (-2)) m
+      | x == 10 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 22 = f (x-1) (Map.insert x (qColumn x) m)
@@ -280,8 +322,11 @@ testLevel = f 255 Map.empty
       | x == 30 = f (x-1) (Map.insert x (pipeColumnR x) m)
       | x == 39 = f (x-1) (Map.insert x (pipeColumnL2 x) m)
       | x == 40 = f (x-1) (Map.insert x (pipeColumnR2 x) m)
+      | x == 41 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 47 = f (x-1) (Map.insert x (pipeColumnL3 x) m)
       | x == 48 = f (x-1) (Map.insert x (pipeColumnR3 x) m)
+      | x == 52 = f (x-1) (Map.insert x (goombaColumn x) m)
+      | x == 53 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 58 = f (x-1) (Map.insert x (pipeColumnL3 x) m)
       | x == 59 = f (x-1) (Map.insert x (pipeColumnR3 x) m)
       | x == 65 = f (x-1) (Map.insert x (hidBlockColumn x) m)
@@ -290,19 +335,28 @@ testLevel = f 255 Map.empty
       | x == 78 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 79 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 80 = f (x-1) (Map.insert x (brickColumn x) m)
-      | x > 80 && x < 88 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 81 = f (x-1) (Map.insert x (goombaColumn2 x) m)
+      | x == 82 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 83 = f (x-1) (Map.insert x (goombaColumn2 x) m)
+      | x > 83 && x < 88 = f (x-1) (Map.insert x (brickColumn3 x) m)
       | x == 88 || x == 89 = f (x-1) (Map.insert x (brickColumn4 x) m)
       | x == 90 = f (x-1) (Map.insert x emptyColumn m)
       | x > 92 && x < 96 = f (x-1) (Map.insert x (brickColumn3 x) m)
       | x == 96 = f (x-1) (Map.insert x (qColumn2 x) m)
+      | x == 99 = f (x-1) (Map.insert x (goombaColumn x) m)
+      | x == 101 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 102 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 103 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 108 = f (x-1) (Map.insert x (qColumn x) m)
+      -- x == 109 koopaColumn
       | x == 111 = f (x-1) (Map.insert x (qColumn3 x) m)
       | x == 114 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 116 = f (x-1) (Map.insert x (goombaColumn x) m)
+      | x == 118 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 120 = f (x-1) (Map.insert x (brickColumn x) m)
       | x > 122 && x < 127 = f (x-1) (Map.insert x (brickColumn3 x) m)
-      | x == 132 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x == 127 = f (x-1) (Map.insert x (goombaColumn x) m)
+      | x == 129 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 133 || x == 134 = f (x-1) (Map.insert x (brickColumn2 x) m)
       | x == 135 = f (x-1) (Map.insert x (brickColumn3 x) m)
       | x == 138 = f (x-1) (Map.insert x (stairColumn1 x) m)
@@ -328,6 +382,8 @@ testLevel = f 255 Map.empty
       | x == 172 || x == 173 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 174 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 175 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 178 = f (x-1) (Map.insert x (goombaColumn x) m)
+      | x == 180 = f (x-1) (Map.insert x (goombaColumn x) m)
       | x == 183 = f (x-1) (Map.insert x (pipeColumnL x) m)
       | x == 184 = f (x-1) (Map.insert x (pipeColumnR x) m)
       | x == 185 = f (x-1) (Map.insert x (stairColumn1 x) m)
