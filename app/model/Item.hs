@@ -10,6 +10,9 @@ instance PhysicsFunctions Item where
     getHitbox i = htb $ physics $ iType i
     isAlive :: Item -> Bool
     isAlive i = alive (iType i) == ALIVE
+    moveBy :: (Float, Float) -> Item -> Item
+    moveBy _ NOITEM = NOITEM
+    moveBy (xoff,yoff) i = i {iType = (iType i) {physics = (physics (iType i)) {pos = (xoff+fst(getPos i),yoff+snd(getPos i))}}}
     kill i = i {iType = (iType i) {alive = DEAD}}
 
 -- | Data descriving objects in Game (Coins & Powerups)
@@ -26,25 +29,17 @@ makeMushroom (x,y) = MkItem
                 alive = ALIVE}
     }
 
--- coin :: Item
--- coin = MkItem 
---     { iType = MkEntity {entity = MkItemType COIN, 
---                         physics = initPhysicsCoin,
---                         alive = ALIVE}
---     , iPos = MkGrid 2 7
---     }
+makeCoin :: Point -> Item
+makeCoin (x,y) = MkItem
+    {   iType = MkEntity
+                {entity = MkItemType COIN,
+                physics = coinPhys {pos = (x,y)},
+                alive = ALIVE}
+    }
 
--- mushroom :: Item
--- mushroom = MkItem 
---     { iType = MkEntity {entity = MkItemType MUSHROOM, 
---                         physics = initPhysicsMushroom,
---                         alive = ALIVE}
---     , iPos = MkGrid 3 4 -- what do 
---     }
-
-initPhysicsCoin :: Physics
-initPhysicsCoin = MkPhysics 
-    {   pos = (60.0,0.0)
+coinPhys :: Physics
+coinPhys = MkPhysics 
+    {   pos = (0.0,0.0)
     ,   vel = (0.0,0.0)
     ,   mxv = (3000,3000)
     ,   acc = (0.0,0.0)

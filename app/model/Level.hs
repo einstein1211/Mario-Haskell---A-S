@@ -220,19 +220,23 @@ pipeColumnR3 cn =
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (makeGridPos (cn,8) startScaling))))
   $ addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform PIPER platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
+mushroomColumn :: ColumnNumber -> Column
+mushroomColumn cn =
+   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
+
 qColumn :: ColumnNumber -> Column
 qColumn cn =
-   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
+   addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 qColumn2 :: ColumnNumber -> Column
 qColumn2 cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) $
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 qColumn3 :: ColumnNumber -> Column
 qColumn3 cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 brickColumn :: ColumnNumber -> Column
 brickColumn cn =
@@ -241,7 +245,7 @@ brickColumn cn =
 brickColumn2 :: ColumnNumber -> Column
 brickColumn2 cn =
     addToColumn (MkTile (MkEnSpawn (makeGoomba (makeGridPos (cn,9) startScaling))) NoChunk) $
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE NOITEM False))) $
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock QBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,2) startScaling)) ALIVE (makeCoin (makeGridPos (cn,1) startScaling)) False))) $
     addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock BRICK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,6) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
 
 brickColumn3 :: ColumnNumber -> Column
@@ -254,7 +258,7 @@ brickColumn4 cn =
 
 hidBlockColumn :: ColumnNumber -> Column
 hidBlockColumn cn =
-    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock HIDDENBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,5) startScaling)) ALIVE NOITEM False))) (standardColumn cn)
+    addToColumn (MkTile NoSpawn (MkBlkChunk (MkBlock HIDDENBLOCK (MkPlatform BLOCK (MkHB 16 16) (makeGridPos (cn,5) startScaling)) ALIVE (makeMushroom (makeGridPos (cn,1) startScaling)) False))) (standardColumn cn)
 
 stairColumn1 :: ColumnNumber -> Column
 stairColumn1 cn =
@@ -324,7 +328,7 @@ testLevel = f 255 Map.empty
       -- | x == 10 = f (x-1) (Map.insert x (koopaColumn x) m)
       | x == 17 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 21 = f (x-1) (Map.insert x (brickColumn x) m)
-      | x == 22 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 22 = f (x-1) (Map.insert x (mushroomColumn x) m)
       | x == 23 = f (x-1) (Map.insert x (brickColumn2 x) m)
       | x == 24 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 25 = f (x-1) (Map.insert x (brickColumn x) m)
@@ -343,7 +347,7 @@ testLevel = f 255 Map.empty
       | x == 70 = f (x-1) (Map.insert x emptyColumn m)
       | x == 71 = f (x-1) (Map.insert x emptyColumn m)
       | x == 78 = f (x-1) (Map.insert x (brickColumn x) m)
-      | x == 79 = f (x-1) (Map.insert x (qColumn x) m)
+      | x == 79 = f (x-1) (Map.insert x (mushroomColumn x) m)
       | x == 80 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 81 = f (x-1) (Map.insert x (goombaColumn2 x) m)
       | x == 82 = f (x-1) (Map.insert x (brickColumn3 x) m)
