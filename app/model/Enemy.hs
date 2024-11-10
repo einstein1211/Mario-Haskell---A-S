@@ -53,7 +53,7 @@ goomba2 = MkEnemy
 
 koopa :: Enemy --edit
 koopa = MkEnemy 
-    {   eType = MkEntity {entity = MkEnemyType GRNKOOPA, physics = initPhysics4, alive = ALIVE}
+    {   eType = MkEntity {entity = MkEnemyType GRNKOOPA, physics = initPhysicsKoopa, alive = ALIVE}
     ,   eAI = HARD
     }
 
@@ -90,8 +90,8 @@ initPhysics3 = MkPhysics
     ,   dir = RIGHT
     }
 
-initPhysics4 :: Physics
-initPhysics4 = MkPhysics
+initPhysicsKoopa :: Physics
+initPhysicsKoopa = MkPhysics
     {   pos = (-500.0,0.0)
     ,   vel = (-200.0,300.0)
     ,   mxv = (3000,3000)

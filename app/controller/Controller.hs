@@ -14,12 +14,8 @@ import Control.Concurrent (threadDelay)
 import System.IO (writeFile, appendFile)
 
 
--- trace :: String -> a -> a
-
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
-
-
 
 -- Write the score to a text file
 writeScore :: Int -> IO ()

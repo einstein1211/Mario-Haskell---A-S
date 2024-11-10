@@ -82,7 +82,7 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
 
 viewScore :: GameState -> Picture
 viewScore g@MkGameState {score = sc} =
-  color white $ scale 0.3 0.3 $ (translate x y (text "Score: ")) <> (translate (x+400) y (text (show sc)))
+  color white $ scale 0.3 0.3 $ (translate x y (text ("Score: " ++ show sc)))
   where
     x = fromIntegral (fst res) * (-1.5)
     y = fromIntegral (snd res) * (1.5)
@@ -174,6 +174,9 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
         PIPETR  -> pipe_tr1
         DIRT    -> dirt1
         STAIR   -> stair1
+        FLAGPOLE-> flagpole1
+        FLAGTOP -> flagpole2
+        FLAG    -> flag
         BLOCK   -> noimg
     bmp | img /= noimg = translate x y $ Scale es es $ imageToPicture img
         | otherwise = blank

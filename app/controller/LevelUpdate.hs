@@ -14,7 +14,7 @@ import qualified Data.Map as Map
 
 levelUpdate :: Float -> GameState -> GameState
 levelUpdate secs g
-  | any forward (players g) && blockForward = -- && windowShifted g =
+  | any forward (players g) && blockForward = trace (show (xOffset g))-- && windowShifted g =
     g {
       slidingWindow = windowSlide $ slideBlocksLeft (head (players g)) secs (slidingWindow g) -- $  (slidingWindow g)
       ,enemies = slideEnemiesLeft (head (players g)) secs (enemies g)
