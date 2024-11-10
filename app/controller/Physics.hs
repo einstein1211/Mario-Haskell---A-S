@@ -32,7 +32,7 @@ applyPhysics secs gstate =
     }
   where
     plf obj = playerPhysics gstate $ obj  {pType = applyPhysics' secs gstate (pType obj), pJumpTime = pJumpTime obj - secs}
-    enf obj = obj  {eType = applyPhysics' secs gstate (eType obj)}
+    enf obj = enemyPhysics gstate $ obj  {eType = applyPhysics' secs gstate (eType obj)}
     itf obj = obj  {iType = applyPhysics' secs gstate (iType obj)}
 
 applyPhysics' :: Float -> GameState -> Entity -> Entity
@@ -46,7 +46,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     y'  = y   + vy*s
     enttype = entity e
     vx' = if enttype == MkPlayerType MARIO then vxpl' else vx
-    vxpl' 
+    vxpl'
       | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
@@ -112,6 +112,27 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | left    = LEFT
       | right   = RIGHT
       | otherwise = dir phys
+
+enemyPhysics :: GameState -> Enemy -> Enemy
+enemyPhysics g en = en {eType = ent {physics = phys'}}
+  where
+    ent = eType en
+    phys = physics ent
+    phys' = phys {vel = vel',dir = dir'}
+    -- (x,y) = getPos en
+    (vx,vy) = getVel en
+    dir'
+      | vx > 0 = RIGHT
+      | otherwise = LEFT
+    vel'
+      | vx == 0 && (dir phys) == RIGHT = (-speed,vy)
+      | vx == 0 && dir phys == LEFT  = (speed,vy)
+      | otherwise = (vx,vy)
+    speed =
+      case eAI en of
+        EASY    -> 150
+        MEDIUM  -> 175
+        HARD    -> 200
 
 maxSpdCheck :: Entity -> Entity
 maxSpdCheck e@(MkEntity _ p _) = e {physics = p {vel = (vx',vy')}}
@@ -204,8 +225,8 @@ platformCheck g e = foldr platformCheck' e plats
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
 collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck e@(MkEntity _ p _) 
-  | killboundary = kill e 
+collisionCheck e@(MkEntity _ p _)
+  | killboundary = kill e
   | otherwise = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
   where
     (x,y)   = pos p

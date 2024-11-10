@@ -8,6 +8,7 @@ data EnemyAI = EASY | MEDIUM | HARD
 
 instance PhysicsFunctions Enemy where
     getPos e = pos $ physics $ eType e
+    getVel e = vel $ physics $ eType e
     getHitbox e = htb $ physics $ eType e
     isAlive e = alive (eType e) == ALIVE
     moveBy (xoff,yoff) e = e{eType = (eType e) {physics = (physics (eType e)) {pos = (xoff+fst(getPos e),yoff+snd(getPos e))}}}
@@ -54,7 +55,7 @@ goombaPhys = MkPhysics
     ,   acc = (0.0,0.0)
     ,   gnd = AIRBORNE
     ,   htb = MkHB 14 16   
-    ,   dir = RIGHT
+    ,   dir = LEFT
     }
 
 initPhysics3 :: Physics
