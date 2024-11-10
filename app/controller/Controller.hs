@@ -33,7 +33,7 @@ step :: Float -> GameState -> IO GameState
 step secs gstate
   | mode gstate == StartMenu = return gstate
   | isPaused gstate = return gstate
-  | not (any isAlive (players gstate)) && mode gstate == Playing = return gstate {mode = Exiting}
+  | (not (any isAlive (players gstate)) || xOffset >= 12225) && mode gstate == Playing = return gstate {mode = Exiting}
   | mode gstate == Exiting = do
       writeScore (score gstate)
       putStrLn $ "Thanks for playing! Your final score is " ++ show (score gstate)
