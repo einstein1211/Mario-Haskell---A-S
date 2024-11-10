@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Basic where
 import Graphics.Gloss
 
@@ -8,11 +9,12 @@ type Velocity = (Xvel,Yvel)
 type Xacc = Float
 type Yacc = Float
 type Acceleration = (Xacc,Yacc)
-data GridIndex = MkGrid Float Float deriving (Show,Eq)
+data GridIndex = MkGrid Int Int deriving (Show,Eq)
 type Width = Float
 type Height = Float
 data Hitbox = MkHB Width Height deriving (Show,Eq)
-
+type Resolution = (Int,Int)
+type Scaling = Float 
 
 data IsGrounded = GROUNDED | AIRBORNE
     deriving (Show,Eq)
@@ -32,13 +34,19 @@ data EntityType = MkPlayerType PlayerType | MkEnemyType EnemyType | MkItemType I
 data Alive       = ALIVE | DEAD
     deriving (Show,Eq)
 
-class GetPhysics a where
-    getHitbox :: a -> Hitbox
-    getPos :: a -> Point
-    getVel :: a -> Velocity
-    getAcc :: a -> Acceleration
-    isAlive :: a -> Bool
-    isGrounded :: a -> Bool
+class PhysicsFunctions f where
+    getHitbox :: f -> Hitbox
+    getPos    :: f -> Point
+    getVel    :: f -> Velocity
+    getAcc    :: f -> Acceleration
+    isAlive   :: f -> Bool
+    moveBy    :: (Float,Float) -> f -> f
+    kill      :: f -> f
+    isGrounded :: f -> Bool
+
+-- class GridIndexFunctions a where
+--     changeGridIndex :: GridIndex -> a -> a
+--     getGridIndex :: a -> GridIndex
 
 data Physics = MkPhysics
     {   pos :: Point
@@ -56,10 +64,37 @@ data Entity = MkEntity
     ,   alive :: Alive
     } deriving (Show,Eq)
 
+instance PhysicsFunctions Entity where
+    kill :: Entity -> Entity
+    kill e = e {alive = DEAD}
+
 fps :: Int
 fps = 100
 
- --16 blocks wide, 12 blocks high
+res :: Resolution
+res = (1024,768)  --16 blocks wide, 12 blocks high
 
+startScaling :: Float
+startScaling = 1
 
+blksz :: Scaling -> Float
+blksz s = 64*s
 
+gridPos :: GridIndex -> Scaling -> Point
+gridPos (MkGrid x y) s = translate00 (fromIntegral x*blk+(blk/2),-(fromIntegral y*blk)-(blk/2)) s
+  where
+    blk = blksz s
+
+makeGridPos :: (Int,Int) -> Scaling -> Point
+makeGridPos (x,y) s = translate00 (fromIntegral x*blk+(blk/2),-(fromIntegral y*blk)-(blk/2)) s
+  where
+    blk = blksz s
+
+translate00 :: Point -> Scaling -> Point
+translate00 (x,y) s = (x-(fst uppbound *s),y+(snd uppbound *s))
+
+uppbound :: (Float,Float)
+uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
+
+lowbound :: (Float,Float)
+lowbound = (-fst uppbound,-snd uppbound)

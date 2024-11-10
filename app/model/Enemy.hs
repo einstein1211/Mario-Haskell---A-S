@@ -1,6 +1,3 @@
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE InstanceSigs #-}
-{-# LANGUAGE InstanceSigs #-}
 module Model.Enemy where
 
 import Model.Basic
@@ -8,11 +5,10 @@ import Model.Basic
 data EnemyAI = EASY | MEDIUM | HARD
     deriving (Show,Eq)
 
-instance GetPhysics Enemy where
-    getHitbox :: Enemy -> Hitbox
+instance PhysicsFunctions Enemy where
     getHitbox e = htb $ physics $ eType e
-    isAlive :: Enemy -> Bool
     isAlive e = alive (eType e) == ALIVE
+    kill e = e {eType = (eType e) {alive = DEAD}}
 
 -- | Data describing enemies in Game 
 data Enemy = MkEnemy

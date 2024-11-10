@@ -7,9 +7,12 @@ import Model.Enemy
 import Model.Block
 import Model.Item
 import Model.Platform
+import Model.Level
 import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 import Data.Bifunctor
+
+import qualified Data.Map as Map
 
 grav :: Float
 grav = -2000
@@ -43,7 +46,7 @@ applyPhysics' s g e@(MkEntity _ p _) = checks e {physics = p'}
     y'  = y   + vy*s
     enttype = entity e
     vx' --BUG: Makes you get stuck on walls 
-      | grounded && vx<5 && vx>(-5) = 0 + ax*s 
+      | grounded && vx<5 && vx>(-5) = 0 + ax*s
       | grounded && vx>0            = vx*friction + ax*s
       | grounded && vx<0            = vx*friction + ax*s
       | otherwise                   = vx + ax*s
@@ -71,6 +74,7 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
     none = not (space||up||left||right)
     phys  = physics typ
     grounded = gnd phys == GROUNDED
+    (x,y) = getPos pl
     (ax,ay) = acc phys
     movl
       | grounded&&left     = -300
@@ -84,7 +88,9 @@ playerPhysics g pl = pl {pType = typ',pJumpTime = jmpt',pMovement=movement}
       | grounded&&jmpt>0     = (-grav)
       | not grounded&&jmpt>0 = 0.5*(-grav)
       | otherwise            = 0
-    phys' = phys {acc = acc', mxv = mv', dir = dir'}   
+    phys' = phys {acc = acc',mxv = mv',pos = (x',y), dir = dir'}
+    x' = min x xThresHold
+    xThresHold = fromIntegral (fst res) * 0.125 * windowScale g
     mv' = if shft then (700,800) else (300,800)
     acc'
       | none = (0,0)
@@ -140,16 +146,17 @@ intersects p1@(x1,y1) hb1@(MkHB w1 h1) p2@(x2,y2) hb2@(MkHB w2 h2) =
       c8 = (x2-(w2/2),y2-(h2/2))
 
 blockCheck :: GameState -> Entity -> Entity
+-- blockCheck g e@(MkEntity _ p _) = Map.foldr f e {physics = p {gnd=AIRBORNE}} (slidingWindow g)
 blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE}} blks
   where
-    blks = blocks g
+    blks = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     blockCheck' :: Block -> Entity -> Entity
     blockCheck' (MkBlock typ plt _ _) (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
+        ppos@(px,py) = pfPos plt
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -171,14 +178,14 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
 platformCheck :: GameState -> Entity -> Entity
 platformCheck g e = foldr platformCheck' e plats
   where
-    plats = platforms g
+    plats = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     platformCheck' ::  Platform -> Entity -> Entity
     platformCheck' plt (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
         opos@(ox,oy) = pos obj
-        ppos@(px,py) = gridPos (pfPos plt) (windowScale g)
+        ppos@(px,py) = pfPos plt
         (vx,vy) = vel obj
         (ax,ay) = acc obj
         ohb@(MkHB ow oh) = htb obj
@@ -196,7 +203,9 @@ platformCheck g e = foldr platformCheck' e plats
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
 collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
+collisionCheck e@(MkEntity _ p _) 
+  | killboundary = kill e 
+  | otherwise = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -205,25 +214,10 @@ collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy)
     w = (\(MkHB c d) -> c) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
     (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
-    x'
-      | r > fst uppbound = x-1
-      | l < fst lowbound = x+1
-      | otherwise = x
+    killboundary = x < (-((fromIntegral (fst res))*0.5) - 100) || y < (-((fromIntegral (snd res))*0.5))
+    x' = x
+      -- | r > fst uppbound = x-1
+      -- | l < fst lowbound = x+1
+      -- | otherwise = x
 
-blksz :: Scaling -> Float
-blksz s = 64*s
-
-gridPos :: GridIndex -> Scaling -> Point
-gridPos (MkGrid x y) s = translate00 (x*blk+(blk/2),-(y*blk)-(blk/2)) s
-  where
-    blk = blksz s
-
-translate00 :: Point -> Scaling -> Point
-translate00 (x,y) s = (x-(fst uppbound *s),y+(snd uppbound *s))
-
-uppbound :: (Float,Float)
-uppbound = (fromIntegral (fst res) / 2, fromIntegral (snd res) / 2)
-
-lowbound :: (Float,Float)
-lowbound = (-fst uppbound,-snd uppbound)
 -- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)

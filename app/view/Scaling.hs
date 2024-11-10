@@ -9,12 +9,6 @@ import Model.Platform
 
 import Graphics.Gloss
 
-type Resolution = (Int,Int)
-type Scaling = Float 
-
-res :: Resolution
-res = (1024,768)
-
 windowToRatio :: Scaling -> Picture -> Picture
 windowToRatio s = scale s s
 

@@ -1,10 +1,12 @@
 module Controller.Controller where
 
+import Model.Basic
 import Model.Model
 import Model.Player
 import View.Scaling
 import Controller.Physics
 import Controller.Entity
+import Controller.LevelUpdate
 import Graphics.Gloss.Interface.IO.Game
 import System.Exit (exitSuccess)
 import Debug.Trace (trace)
@@ -19,7 +21,7 @@ step :: Float -> GameState -> IO GameState
 step secs gstate
   | mode gstate == StartMenu = return gstate
   | isPaused gstate = return gstate
-  | otherwise = return $ entityInteractions secs $ applyPhysics secs $ entityUpdate gstate { time = time gstate + secs }
+  | otherwise = return $ entityInteractions secs $ applyPhysics secs $ levelUpdate secs $ entityUpdate gstate { time = time gstate + secs }
 
 --Debug step
 -- step :: Float -> GameState -> IO GameState --startmenu
@@ -60,7 +62,7 @@ inputKey e@(EventKey (SpecialKey key) state _ _) gstate
   | dkey = playerMove e gstate
   | otherwise =
     case key of
-      KeyEsc   -> undefined--exitSuccess
+      KeyEsc   -> error (show (slidingWindow gstate))--exitSuccess
       KeyCtrlL -> if state == Down then gstate {debugMode = not (debugMode gstate)} else gstate
       _ -> error ":("
       where

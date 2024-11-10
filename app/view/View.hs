@@ -6,20 +6,16 @@ import Model.Player
 import Model.Enemy
 import Model.Block
 import Model.Platform
+import Model.Level
 import Model.Item
 import View.Images
 import View.Scaling
 import Controller.Physics
 import Graphics.Gloss
 
+import qualified Data.Map as Map
 
--- viewObject :: Color -> Point -> Path -> Picture
--- viewObject c p pt =
---   color c $ polygon $ locup p pt
---     where
---       locup :: Point -> Path -> Path
---       locup _ [] = []
---       locup l (s:ss) = bimap (fst l +) (snd l +) s: locup l ss
+import Debug.Trace
 
 view :: GameState -> IO Picture
 view g = do
@@ -56,7 +52,10 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
     Playing -> windowToRatio wScale $ pictures $
                   [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
       where
-        gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
+        gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewItem g (items g) ++ viewPlatform g platfrms ++ viewBlock g blocks 
+        -- gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
+        blocks    = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
+        platfrms  = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
         -- Pause
         pauseOverlay = pausebg <> pausetext
         pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
@@ -171,7 +170,7 @@ viewPlatform g (plt:plts) = bmp : hbox : viewPlatform g plts
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos plt) ws
+    (x,y) = pfPos plt
     MkHB w h = pfHitbox plt
     es = entityScale g
     ws = windowScale g
@@ -191,13 +190,7 @@ viewBlock g (blck:blcks) = bmp : hbox : viewBlock g blcks
     hbox
         | debugMode g = color green $ line [(x-(w/2),y-(h/2)),(x+(w/2),y-(h/2)),(x+(w/2),y+(h/2)),(x-(w/2),y+(h/2)),(x-(w/2),y-(h/2))]
         | otherwise   = blank
-    (x,y) = gridPos (pfPos (bPlatform blck)) ws
+    (x,y) = pfPos (bPlatform blck)
     MkHB w h = pfHitbox (bPlatform blck)
     es = entityScale g
     ws = windowScale g
--- viewPure :: GameState -> Picture
--- viewPure gstate = case infoToShow gstate of
---   ShowNothing   -> blank
---   ShowANumber n -> color green (text (show n))
---   ShowAChar   c -> color green (text [c])
---   ShowAShape  o -> viewObject o

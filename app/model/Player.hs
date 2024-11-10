@@ -1,4 +1,3 @@
-{-# LANGUAGE InstanceSigs #-}
 module Model.Player where
 
 import Model.Basic
@@ -9,17 +8,18 @@ data Movement   = STANDING | WALKING | CROUCHING | JUMPING -- | SKIDDING
 data Status     = SMALL | BIG       | FIRE
     deriving (Show,Eq)
 
-instance GetPhysics Player where
-    getPos :: Player -> Point
+instance PhysicsFunctions Player where
     getPos p = pos $ physics $ pType p
-    getVel :: Player -> Velocity
     getVel p = vel $ physics $ pType p
-    getAcc :: Player -> Acceleration
     getAcc p = acc $ physics $ pType p
-    getHitbox :: Player -> Hitbox
     getHitbox p = htb $ physics $ pType p
-    isAlive :: Player -> Bool
-    isAlive p = alive (pType p) == ALIVE
+    isAlive p = alive (pType p) == ALIVE  
+    moveBy (x,y) p = p {pType = (pType p) {physics = pphys{pos=(px+x,py+y)}}} 
+      where
+        ent = pType p
+        pphys = physics ent
+        (px,py) = getPos p
+    kill p = p {pType = (pType p) {alive = DEAD}}
     isGrounded p = gnd (physics (pType p)) == GROUNDED
 
 -- | Data describing players in Game 
@@ -42,7 +42,7 @@ mario = MkPlayer
 
 initPhysics :: Physics
 initPhysics = MkPhysics
-    {   pos = (0.0,0.0)
+    {   pos = (-300.0,0.0)
     ,   vel = (0.0,3000.0)
     ,   mxv = (500,500)
     ,   acc = (0.0,0.0)
