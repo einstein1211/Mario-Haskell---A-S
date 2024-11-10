@@ -227,6 +227,43 @@ stairColumn4 cn =
     addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
     addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
+stairColumn5 :: ColumnNumber -> Column
+stairColumn5 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn6 :: ColumnNumber -> Column
+stairColumn6 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn7 :: ColumnNumber -> Column
+stairColumn7 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
+
+stairColumn8 :: ColumnNumber -> Column
+stairColumn8 cn =
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,2) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,3) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,4) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,5) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,6) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,7) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,8) startScaling)))) $
+    addToColumn (MkTile NoSpawn (MkPltChunk (MkPlatform STAIR platformHB (makeGridPos (cn,9) startScaling)))) (standardColumn cn)
 
 testLevel :: Level
 testLevel = f 255 Map.empty
@@ -256,7 +293,7 @@ testLevel = f 255 Map.empty
       | x > 80 && x < 88 = f (x-1) (Map.insert x (brickColumn3 x) m)
       | x == 88 || x == 89 = f (x-1) (Map.insert x (brickColumn4 x) m)
       | x == 90 = f (x-1) (Map.insert x emptyColumn m)
-      | x > 92 && x < 95 = f (x-1) (Map.insert x (brickColumn3 x) m)
+      | x > 92 && x < 96 = f (x-1) (Map.insert x (brickColumn3 x) m)
       | x == 96 = f (x-1) (Map.insert x (qColumn2 x) m)
       | x == 102 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 103 = f (x-1) (Map.insert x (brickColumn x) m)
@@ -291,6 +328,18 @@ testLevel = f 255 Map.empty
       | x == 172 || x == 173 = f (x-1) (Map.insert x (brickColumn x) m)
       | x == 174 = f (x-1) (Map.insert x (qColumn x) m)
       | x == 175 = f (x-1) (Map.insert x (brickColumn x) m)
+      | x == 183 = f (x-1) (Map.insert x (pipeColumnL x) m)
+      | x == 184 = f (x-1) (Map.insert x (pipeColumnR x) m)
+      | x == 185 = f (x-1) (Map.insert x (stairColumn1 x) m)
+      | x == 186 = f (x-1) (Map.insert x (stairColumn2 x) m)
+      | x == 187 = f (x-1) (Map.insert x (stairColumn3 x) m)
+      | x == 188 = f (x-1) (Map.insert x (stairColumn4 x) m)
+      | x == 189 = f (x-1) (Map.insert x (stairColumn5 x) m)
+      | x == 190 = f (x-1) (Map.insert x (stairColumn6 x) m)
+      | x == 191 = f (x-1) (Map.insert x (stairColumn7 x) m)
+      | x == 192 = f (x-1) (Map.insert x (stairColumn8 x) m)
+      | x == 193 = f (x-1) (Map.insert x (stairColumn8 x) m)
+    --   | x == 202 = f (x-1) (Map.insert x (flagColumn x) m)
       | otherwise = f (x-1) (Map.insert x (standardColumn x) m)
 
 -- initialWindow :: [Column]
