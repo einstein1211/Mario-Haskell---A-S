@@ -147,7 +147,7 @@ viewItem g (it:its) = bmp : viewItem g its
         case entity (iType it) of
         MkItemType COIN -> translate x y $ Scale s s $ imageToPicture img
         _               -> uncurry translate (pos (physics (iType it))) $ Scale s s $ imageToPicture img
-      (x,y) = gridPos (iPos it) ws
+      (x,y) = getPos it
       (MkHB width height) = hitbox img
       s = entityScale g
       ws = windowScale g

@@ -15,12 +15,12 @@ import Debug.Trace
 import qualified Data.Map as Map
 
 entityUpdate :: GameState -> GameState
-entityUpdate g =  filterAlive $ windowShift g
+entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
   where
     windowShift gs
       | not (windowShifted gs) = -- trace "window shifted"
         gs {
-          enemies = (enemies gs) ++ (map (scaleTo es) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
+          enemies = enemies gs ++ map (scaleTo es) (Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
           slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries EnemyEntry c) ac) Map.empty (slidingWindow gs),
           windowShifted = True
           }
@@ -39,6 +39,21 @@ entityUpdate g =  filterAlive $ windowShift g
           | isAlive b = t : ac
           | otherwise = MkTile s NoChunk : ac
         f t ac = t : ac
+    filterSpawn gs =
+      gs {
+        items = items gs ++ map (scaleTo es) (Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow gs)),
+        slidingWindow = Map.foldrWithKey (\k c ac -> Map.insert k (checkSpawn c) ac) Map.empty $ Map.foldrWithKey (\k c ac -> Map.insert k (deleteEntries ItemEntry c) ac) Map.empty (slidingWindow gs)
+        }
+    checkSpawn (MkColumn tiles) = MkColumn $ foldr f [] tiles
+      where
+        f t@(MkTile s c@(MkBlkChunk b@(MkBlock _ _ _ _ spawn))) ac
+          | spawn = MkTile (newspawn b) (MkBlkChunk b{bSpawn = False}) : ac
+          | otherwise = t : ac
+        f t ac = t : ac
+        newspawn b = MkItSpawn $ i {iType = (iType i) {physics = (physics (iType i)) {pos = (bx,by+64)}}}
+          where
+            (bx,by) = getPos b
+            i = bContents b
     es = entityScale g
     ws = windowScale g
 
@@ -55,15 +70,15 @@ playerState s p = p'
     grounded = gnd phys == GROUNDED
 
     htbGround =
-      case pPower p of 
+      case pPower p of
         SMALL -> MkHB 12 16
         BIG   -> MkHB 16 32
     htbJump =
       case pPower p of
         SMALL -> MkHB 14 16
         BIG   -> MkHB 16 32
-    htbCrouch = 
-      case pPower p of 
+    htbCrouch =
+      case pPower p of
         SMALL -> MkHB 12 16
         BIG   -> MkHB 16 22
 
@@ -171,7 +186,7 @@ enemyVsEnemy e2 e1 = newe
         HARD    -> 200
 
 playerVsItem :: Scaling -> Item -> Player -> Player
-playerVsItem s i p = newp 
+playerVsItem s i p = newp
   where
     newp
       | intersects ipos ihb ppos phb = p'
@@ -179,14 +194,14 @@ playerVsItem s i p = newp
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics ent
-    ipos@(ix,iy)    = 
+    ipos@(ix,iy)    =
       case entity (iType i) of
-        MkItemType COIN -> gridPos (iPos i) s
+        MkItemType COIN -> getPos i
         _               -> pos iphys
     ihb@(MkHB _ ih) = htb iphys
     iphys           = physics (iType i)
     ent             = pType p
-    p' = 
+    p' =
       case entity (iType i) of
         MkItemType MUSHROOM -> if pPower p == SMALL then p {pPower = BIG} else p
         _                   -> p
@@ -200,9 +215,9 @@ itemVsPlayer s p i = newi
     ppos@(px,py)    = pos pphys
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
-    ipos@(ix,iy)    = 
+    ipos@(ix,iy)    =
       case entity (iType i) of
-        MkItemType COIN -> gridPos (iPos i) s
+        MkItemType COIN -> getPos i
         _               -> pos iphys
     ihb@(MkHB _ ih) = htb iphys
     iphys           = physics ent
@@ -230,8 +245,16 @@ blockVsPlayer g p b =
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = b
     hit =
-      case bType b of
-        BRICK       -> kill b
-        QBLOCK      -> b {bType = EMPTYBLOCK}
-        EMPTYBLOCK  -> b
-        HIDDENBLOCK -> b {bType = EMPTYBLOCK}
+      case bContents b of
+        NOITEM ->
+          case bType b of
+            BRICK       -> kill b
+            QBLOCK      -> b {bType = EMPTYBLOCK}
+            EMPTYBLOCK  -> b
+            HIDDENBLOCK -> b {bType = EMPTYBLOCK}
+        _      ->
+          case bType b of
+            BRICK       -> kill b {bSpawn = True}
+            QBLOCK      -> b {bType = EMPTYBLOCK, bSpawn = True}
+            EMPTYBLOCK  -> b
+            HIDDENBLOCK -> b {bType = EMPTYBLOCK, bSpawn = True}

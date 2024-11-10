@@ -174,7 +174,7 @@ blockCheck g e@(MkEntity _ p _) = foldr blockCheck' e {physics = p {gnd=AIRBORNE
   where
     blks = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
     blockCheck' :: Block -> Entity -> Entity
-    blockCheck' (MkBlock typ plt _ _) (MkEntity _ obj _)
+    blockCheck' (MkBlock typ plt _ _ _) (MkEntity _ obj _)
       | intersects opos ohb ppos phb = e {physics=obj'}
       | otherwise = e {physics=obj}
       where
