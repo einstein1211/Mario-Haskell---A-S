@@ -147,8 +147,12 @@ playerVsEnemy e p = newp
     -- yup = (px,py+((ph/2)+(eh/2)-abs (py-ey)))
     damage =
       case pPower p of
-        SMALL -> kill p
-        _     -> p {pPower = SMALL}
+        -- SMALL -> kill p
+        -- _     -> p {pPower = SMALL}
+        SMALL
+          | pInvTime p <= 0 -> kill p       
+          | otherwise -> p                  
+        _ -> p {pPower = SMALL}             
 
 enemyVsPlayer :: Player -> Enemy -> Enemy
 enemyVsPlayer p e = newe
