@@ -14,7 +14,7 @@ import Graphics.Gloss.Interface.IO.Game (SpecialKey)
 data HasWon     = WON   | LOST      | PLAYING
     deriving(Show,Eq)
 
-data GameMode = StartMenu | Playing deriving (Eq, Show) 
+data GameMode = StartMenu | Playing | Exiting deriving (Eq, Show) 
 
 data GameState = MkGameState 
     {   lives :: Int

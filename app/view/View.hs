@@ -66,16 +66,19 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
         veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
         acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
         scaletext = color cyan    $ translate (-100) 80  $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
-        
         debug
           | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
           | otherwise = blank
-
         player = head (players g)
         (MkHB w h) = getHitbox player
         (vx,vy) = getVel player
         (ax,ay) = getAcc player
         (es,ws) = (entityScale g, windowScale g)
+    Exiting -> windowToRatio wScale $ pictures [exitText, scoreText]
+      where
+        scoreText = color white $ translate (-400) 100 $ scale 0.5 0.5 (text ("Your final score is " ++ show (score g)))
+        exitText = color white $ translate (-350) (-100) $ scale 0.5 0.5 (text "Thanks for playing!") 
+
 
 viewScore :: GameState -> Picture
 viewScore g@MkGameState {score = sc} =

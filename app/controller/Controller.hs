@@ -10,14 +10,31 @@ import Controller.LevelUpdate
 import Graphics.Gloss.Interface.IO.Game
 import System.Exit (exitSuccess)
 import Debug.Trace (trace)
+import Control.Concurrent (threadDelay)
+import System.IO (writeFile, appendFile)
+
 
 directKey :: [SpecialKey]
 directKey = [KeyDown,KeyUp,KeyLeft,KeyRight,KeySpace,KeyShiftL]
 
+-- Write the score to a text file
+writeScore :: Int -> IO ()
+writeScore score = do
+    -- Open the file for appending (create if it doesn't exist)
+    appendFile "score.txt" (show score ++ "\n")
+
+
+-- Non debug step
 step :: Float -> GameState -> IO GameState
 step secs gstate
   | mode gstate == StartMenu = return gstate
   | isPaused gstate = return gstate
+  | (not (any isAlive (players gstate)) || xOffset >= 12225) && mode gstate == Playing = return gstate {mode = Exiting}
+  | mode gstate == Exiting = do
+      writeScore (score gstate)
+      putStrLn $ "Thanks for playing! Your final score is " ++ show (score gstate)
+      threadDelay 3000000
+      exitSuccess
   | otherwise = return $ entityInteractions secs $ applyPhysics secs $ levelUpdate secs $ entityUpdate gstate { time = time gstate + secs }
 
 input :: Event -> GameState -> IO GameState
@@ -26,6 +43,7 @@ input e gstate = case e of
   EventKey (Char 'q') Down _ _ | mode gstate == StartMenu -> exitSuccess
   EventKey (Char 'p') Down _ _ | mode gstate == Playing   -> return gstate { isPaused = not (isPaused gstate) }
   _ | mode gstate == Playing -> return $ (inputKey e . resizeEvent e) gstate
+  _ | mode gstate == Exiting -> return gstate
   _ -> return gstate
 
 resizeEvent :: Event -> GameState -> GameState
