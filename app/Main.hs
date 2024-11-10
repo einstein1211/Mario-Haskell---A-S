@@ -3,7 +3,6 @@ import Model.Model
 import Model.Basic
 import Controller.Controller
 import View.View
-import View.Scaling
 import Graphics.Gloss.Interface.IO.Game
 
 window :: Display

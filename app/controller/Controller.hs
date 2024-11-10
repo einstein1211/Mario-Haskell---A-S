@@ -66,7 +66,7 @@ inputKey e@(EventKey (SpecialKey key) state _ _) gstate
     case key of
       -- KeyEsc   -> error (show (slidingWindow gstate))--exitSuccess
       KeyCtrlL -> if state == Down then gstate {debugMode = not (debugMode gstate)} else gstate
-      _ -> error ":("
+      _ -> gstate
       where
         dkey = key `elem` directKey
 inputKey _ gstate = gstate -- Otherwise keep the same
