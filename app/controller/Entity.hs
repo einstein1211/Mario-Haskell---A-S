@@ -25,8 +25,9 @@ entityUpdate g =  filterAlive $ filterSpawn $ windowShift g
           windowShifted = True
           }
       | otherwise = gs
-    filterAlive gs =
+    filterAlive gs = trace (show (score gs))
       gs {
+        score = score g + (length (filter (not.isAlive) (enemies gs)) * 100) + (length (filter (not.isAlive) (items gs)) * 100),
         players = filter isAlive (map (playerState es) (players gs)),
         enemies  = filter isAlive (enemies gs),
         items    = filter isAlive (items gs),

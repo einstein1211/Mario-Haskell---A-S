@@ -52,7 +52,7 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
     Playing -> windowToRatio wScale $ pictures $
                   [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
       where
-        gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewItem g (items g) ++ viewPlatform g platfrms ++ viewBlock g blocks 
+        gameElements = viewScore g : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewItem g (items g) ++ viewPlatform g platfrms ++ viewBlock g blocks 
         -- gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
         blocks    = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
         platfrms  = map (scaleTo (entityScale g)) $ Map.foldr (\c ac -> getEntries c++ac) [] (slidingWindow g)
@@ -76,6 +76,13 @@ viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode 
         (vx,vy) = getVel player
         (ax,ay) = getAcc player
         (es,ws) = (entityScale g, windowScale g)
+
+viewScore :: GameState -> Picture
+viewScore g@MkGameState {score = sc} =
+  color white $ scale 0.3 0.3 $ (translate x y (text "Score: ")) <> (translate (x+400) y (text (show sc)))
+  where
+    x = fromIntegral (fst res) * (-1.5)
+    y = fromIntegral (snd res) * (1.5)
 
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
