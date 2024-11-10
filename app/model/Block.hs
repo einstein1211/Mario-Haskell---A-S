@@ -14,6 +14,7 @@ instance PhysicsFunctions Block where
     isAlive b = bAlive b == ALIVE
     moveBy :: (Float, Float) -> Block -> Block
     moveBy offset b@(MkBlock _ p _ _) = b{bPlatform = moveBy offset p}
+    kill b = b {bAlive = DEAD}
 
 -- instance GridIndexFunctions Block where
 --     changeGridIndex grd b@(MkBlock _ pl _ _) = b {bPlatform = pl {pfPos = grd}}

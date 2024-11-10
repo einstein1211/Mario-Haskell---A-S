@@ -193,7 +193,9 @@ platformCheck g e = foldr platformCheck' e plats
         xright= (ox+((ow/2)+(pw/2)-abs (ox-px))+1,oy)
 
 collisionCheck :: Entity -> Entity --TODO: SUPER BAD FUNCTION GARBAGE PLS FIXXXXXX MEEEEE
-collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
+collisionCheck e@(MkEntity _ p _) 
+  | killboundary = kill e 
+  | otherwise = e {physics = p {pos = (x',y), vel = (vx',vy), acc = (ax',ay)}}
   where
     (x,y)   = pos p
     (vx,vy) = vel p
@@ -202,9 +204,10 @@ collisionCheck e@(MkEntity _ p _) = e {physics = p {pos = (x',y), vel = (vx',vy)
     w = (\(MkHB c d) -> c) (htb p)
     (l,r) = (x-(w/2),x+(w/2))
     (vx',ax') = if r > fst uppbound || l < fst lowbound then (0,0) else (vx,ax)
-    x'
-      | r > fst uppbound = x-1
-      | l < fst lowbound = x+1
-      | otherwise = x
+    killboundary = x < (-((fromIntegral (fst res))*0.5) - 100) || y < (-((fromIntegral (snd res))*0.5))
+    x' = x
+      -- | r > fst uppbound = x-1
+      -- | l < fst lowbound = x+1
+      -- | otherwise = x
 
 -- lowbound = (fromIntegral (-fst res) / 2, fromIntegral (-snd res) / 2)

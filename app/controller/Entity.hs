@@ -133,7 +133,7 @@ playerVsEnemy e p = newp
     -- yup = (px,py+((ph/2)+(eh/2)-abs (py-ey)))
     damage =
       case pPower p of
-        SMALL -> p {pType = ent {alive = DEAD}}
+        SMALL -> kill p
         _     -> p {pPower = SMALL}
 
 enemyVsPlayer :: Player -> Enemy -> Enemy
@@ -142,7 +142,7 @@ enemyVsPlayer p e = newe
     newe
       | intersects ppos phb epos ehb = e'
       | otherwise                    = e
-    ppos@(px,py)    = pos pphys
+    ppos@(px,py)    = getPos p
     phb@(MkHB _ ph) = htb pphys
     pphys           = physics (pType p)
     (ax,ay)         = acc pphys
@@ -152,7 +152,7 @@ enemyVsPlayer p e = newe
     ephys           = physics ent
     ent             = eType e
     e'
-      | abs (px-ex) < abs (py-ey) && (py > ey) = e {eType = ent {alive = DEAD}}
+      | abs (px-ex) < abs (py-ey) && (py > ey) = kill e
       -- | abs (px-ex) < abs (py-ey) && (py > (ey-5)) = p {pType = ent {physics = pphys {pos = yup,gnd = GROUNDED}}}
       | otherwise = e
 -- entityInteract :: Entity -> Entity -> Entity
@@ -182,7 +182,7 @@ blockVsPlayer g p b =
       | otherwise = b
     hit =
       case bType b of
-        BRICK       -> b {bAlive = DEAD}
+        BRICK       -> kill b
         QBLOCK      -> b {bType = EMPTYBLOCK}
         EMPTYBLOCK  -> b
         HIDDENBLOCK -> b {bType = EMPTYBLOCK}

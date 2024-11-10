@@ -8,6 +8,7 @@ data EnemyAI = EASY | MEDIUM | HARD
 instance PhysicsFunctions Enemy where
     getHitbox e = htb $ physics $ eType e
     isAlive e = alive (eType e) == ALIVE
+    kill e = e {eType = (eType e) {alive = DEAD}}
 
 -- | Data describing enemies in Game 
 data Enemy = MkEnemy

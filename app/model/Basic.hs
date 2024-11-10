@@ -1,3 +1,4 @@
+{-# LANGUAGE InstanceSigs #-}
 module Model.Basic where
 import Graphics.Gloss
 
@@ -40,6 +41,7 @@ class PhysicsFunctions f where
     getAcc    :: f -> Acceleration
     isAlive   :: f -> Bool
     moveBy    :: (Float,Float) -> f -> f
+    kill      :: f -> f
 
 -- class GridIndexFunctions a where
 --     changeGridIndex :: GridIndex -> a -> a
@@ -60,6 +62,10 @@ data Entity = MkEntity
     ,   physics :: Physics
     ,   alive :: Alive
     } deriving (Show,Eq)
+
+instance PhysicsFunctions Entity where
+    kill :: Entity -> Entity
+    kill e = e {alive = DEAD}
 
 fps :: Int
 fps = 100

@@ -14,11 +14,12 @@ instance PhysicsFunctions Player where
     getAcc p = acc $ physics $ pType p
     getHitbox p = htb $ physics $ pType p
     isAlive p = alive (pType p) == ALIVE  
-    moveBy (x,y) p = p{pType = (pType p) {physics = pphys{pos=(px+x,py+y)}}} 
+    moveBy (x,y) p = p {pType = (pType p) {physics = pphys{pos=(px+x,py+y)}}} 
       where
         ent = pType p
         pphys = physics ent
         (px,py) = getPos p
+    kill p = p {pType = (pType p) {alive = DEAD}}
 
 -- | Data describing players in Game 
 data Player = MkPlayer
