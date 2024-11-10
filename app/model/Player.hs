@@ -12,6 +12,7 @@ instance PhysicsFunctions Player where
     getPos p = pos $ physics $ pType p
     getVel p = vel $ physics $ pType p
     getAcc p = acc $ physics $ pType p
+    getDir p = dir $ physics $ pType p
     getHitbox p = htb $ physics $ pType p
     isAlive p = alive (pType p) == ALIVE  
     moveBy (x,y) p = p {pType = (pType p) {physics = pphys{pos=(px+x,py+y)}}} 
@@ -29,6 +30,7 @@ data Player = MkPlayer
     ,   pPower :: Status
     ,   pJumpTime :: Float
     ,   pLives :: Float
+    ,   pInvTime :: Float
     } deriving (Show,Eq)
 
 mario :: Player
@@ -38,6 +40,7 @@ mario = MkPlayer
     ,   pPower = SMALL
     ,   pJumpTime = 0
     ,   pLives = 1
+    ,   pInvTime = 0
     }
 
 initPhysics :: Physics

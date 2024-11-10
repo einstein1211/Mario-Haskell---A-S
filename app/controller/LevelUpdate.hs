@@ -2,6 +2,8 @@ module Controller.LevelUpdate where
 
 import Model.Basic
 import Model.Player
+import Model.Enemy
+import Model.Item
 import Model.Level
 import Model.Model
 import Debug.Trace
@@ -12,23 +14,23 @@ import qualified Data.Map as Map
 
 levelUpdate :: Float -> GameState -> GameState
 levelUpdate secs g
-  | any forward (players g) && blockForward = -- && windowShifted g =
-    -- trace (show (xOffset g))
-    trace (show (levelKey g))
-    -- trace (show (oldLevelKey g))
+  | any forward (players g) && blockForward = trace (show (xOffset g))-- && windowShifted g =
     g {
       slidingWindow = windowSlide $ slideBlocksLeft (head (players g)) secs (slidingWindow g) -- $  (slidingWindow g)
+      ,enemies = slideEnemiesLeft (head (players g)) secs (enemies g)
+      ,items = slideItemsLeft (head (players g)) secs (items g)
       ,level = Map.drop 1 $ slideBlocksLeft (head (players g)) secs (level g)
       ,xOffset = fst (getVel (head (players g))) * secs + xOffset g
       -- ,players = map (moveBy (-(32*windowScale g),0)) (players g)
       ,levelKey = (round (xOffset g) `div` round (16*(entityScale g))) + 17
       ,oldLevelKey = levelKey g
-      -- ,windowShifted = False
+      ,windowShifted = False
       }
   | any forward (players g) = -- && windowShifted g =
-    trace (show (levelKey g))
     g {
       slidingWindow = slideBlocksLeft (head (players g)) secs (slidingWindow g) -- $  (slidingWindow g)
+      ,enemies = slideEnemiesLeft (head (players g)) secs (enemies g)
+      ,items = slideItemsLeft (head (players g)) secs (items g)
       ,level = slideBlocksLeft (head (players g)) secs (level g)
       ,xOffset = fst (getVel (head (players g))) * secs + xOffset g
       -- ,players = map (moveBy (-(32*windowScale g),0)) (players g)
@@ -51,3 +53,12 @@ slideBlocksLeft pl secs = Map.foldrWithKey f Map.empty
   where
     f k c = Map.insert k (moveBy (- (fst (getVel pl) * secs),0) c)
 
+slideEnemiesLeft :: Player -> Float -> [Enemy] -> [Enemy]
+slideEnemiesLeft pl secs = foldr f []
+  where
+    f c ac = moveBy (- (fst (getVel pl) * secs),0) c : ac 
+
+slideItemsLeft :: Player -> Float -> [Item] -> [Item]
+slideItemsLeft pl secs = foldr f []
+  where
+    f c ac = moveBy (- (fst (getVel pl) * secs),0) c : ac 

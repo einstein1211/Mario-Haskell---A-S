@@ -2,7 +2,7 @@ module Model.Platform where
 
 import Model.Basic
 import Graphics.Gloss
-data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK
+data PlatformType    = DIRT  | STAIR     | PIPEL    | PIPER  | PIPETL  | PIPETR | BLOCK | FLAGPOLE | FLAGTOP | FLAG
     deriving (Show,Eq)
 
 instance PhysicsFunctions Platform where
