@@ -25,10 +25,3 @@ main = playIO window
 -- images :: [String]
 -- images = []
 
--- lives int 
--- mario ppower == small
--- when interacting with a mushroom -> ppower = big
--- when ppower == big -> mario changes to super mario (view.hs)
--- when interacting with an enemy -> ppower = small
--- when ppower == small -> super mario changes to mario (view.hs)
-
