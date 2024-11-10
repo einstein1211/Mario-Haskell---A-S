@@ -46,27 +46,37 @@ animateFrames frames rate time =
     in frames !! currentFrameIndex
 
 viewPure :: GameState -> Picture
-viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height)} =
-  windowToRatio wScale $ pictures $ debug : viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g) ++ [pauseoverlay]
-  where
-    dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
-    postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
-    veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
-    acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
-    scaletext = color cyan    $ translate (-100) 80 $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
-    pausetext = color white   $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
-    pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
-    debug
-      | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
-      | otherwise = blank
-    pauseoverlay
-      | isPaused g = pausebg <> pausetext
-      | otherwise  = blank
-    player = head (players g)
-    (MkHB w h) = getHitbox player
-    (vx,vy) = getVel player
-    (ax,ay) = getAcc player
-    (es,ws) = (entityScale g,windowScale g)
+viewPure g@MkGameState {windowScale = wScale, windowRes = (width, height), mode = gameMode} =
+  case gameMode of
+    StartMenu -> windowToRatio wScale $ pictures [startText, startOption, quitOption]
+      where
+        startText   = color white $ translate (-100) 100 $ scale 0.5 0.5 (text "Super Haskell Bros")
+        startOption = color green $ translate (-100) 50  $ scale 0.3 0.3 (text "Press S to start")
+        quitOption  = color red   $ translate (-100) 0   $ scale 0.3 0.3 (text "Press Q to quit")
+    Playing -> windowToRatio wScale $ pictures $
+                  [debug] ++ gameElements ++ [pauseOverlay | isPaused g]
+      where
+        gameElements = viewPlayer g (players g) ++ viewEnemy g (enemies g) ++ viewPlatform g (platforms g) ++ viewBlock g (blocks g) ++ viewItem g (items g)
+        -- Pause
+        pauseOverlay = pausebg <> pausetext
+        pausebg = color (makeColor 0 0 0 0.2) $ translate 0 0 $ rectangleSolid (fromIntegral width) (fromIntegral height)
+        pausetext = color white $ translate (-100) 200 $ scale 0.5 0.5 (text "Paused")
+        -- Debug
+        dbtext    = color green   $ translate (-100) 200 $ scale 0.3 0.3   (text "Debug Mode")
+        postext   = color magenta $ translate (-100) 170 $ scale 0.15 0.15 (text ("Pos:" ++ show (getPos player)))
+        veltext   = color yellow  $ translate (-100) 140 $ scale 0.15 0.15 (text ("Vel:" ++ show (getVel player)))
+        acctext   = color orange  $ translate (-100) 110 $ scale 0.15 0.15 (text ("Acc:" ++ show (getAcc player)))
+        scaletext = color cyan    $ translate (-100) 80  $ scale 0.15 0.15 (text ("Escale:" ++ show es ++ " " ++ "Wscale:" ++ show ws))
+        
+        debug
+          | debugMode g = dbtext <> postext <> veltext <> acctext <> scaletext
+          | otherwise = blank
+
+        player = head (players g)
+        (MkHB w h) = getHitbox player
+        (vx,vy) = getVel player
+        (ax,ay) = getAcc player
+        (es,ws) = (entityScale g, windowScale g)
 
 viewPlayer :: GameState -> [Player] -> [Picture]
 viewPlayer _ [] = [blank]
